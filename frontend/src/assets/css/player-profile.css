@@ -1,0 +1,116 @@
+/* GOLDEN ROCK FC — PLAYER PROFILE PAGE */
+
+.breadcrumb { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 24px; }
+.breadcrumb a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+.breadcrumb a:hover { color: var(--gold); }
+.breadcrumb span { color: var(--ivory-d); }
+
+/* Profile Hero */
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+  min-height: 280px;
+  margin-bottom: 24px;
+}
+.profile-hero-bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(92,26,138,0.3) 0%, rgba(201,152,10,0.12) 50%, rgba(92,26,138,0.1) 100%);
+  z-index: 0;
+}
+.profile-hero > * { position: relative; z-index: 1; }
+.profile-hero-image {
+  flex-shrink: 0;
+  padding: 32px 0 32px 40px;
+}
+.profile-avatar-xl {
+  width: 160px; height: 160px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--gold-d), var(--gold), var(--gold-l));
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 3rem;
+  color: var(--bg-dark);
+  border: 2px solid var(--gold);
+  box-shadow: var(--shadow-gold), 0 0 60px var(--gold-glow);
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+.profile-hero-info { padding: 32px 40px 32px 0; flex: 1; }
+.profile-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.profile-name {
+  display: flex; flex-direction: column; line-height: 0.92; margin-bottom: 8px;
+}
+.profile-name span {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  letter-spacing: 0.04em;
+  color: var(--ivory);
+}
+.profile-name .gold-line {
+  background: linear-gradient(90deg, var(--gold-d), var(--gold), var(--gold-l));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+.profile-number {
+  font-family: var(--font-display);
+  font-size: 5rem;
+  letter-spacing: 0.04em;
+  position: absolute;
+  right: 40px; top: 24px;
+  opacity: 0.08;
+  color: var(--gold);
+  line-height: 1;
+  pointer-events: none;
+  font-style: italic;
+}
+.profile-meta { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 10px; font-size: 0.9rem; color: var(--ivory-d); }
+
+/* Quick Stats */
+.profile-quick-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.quick-stat {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+}
+.quick-stat:hover { border-color: var(--border-bright); }
+.qs-label { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
+.qs-value { font-family: var(--font-display); font-size: 3.2rem; letter-spacing: 0.04em; background: linear-gradient(135deg, var(--gold), var(--gold-l)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.1; }
+.qs-icon { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; opacity: 0.8; }
+
+/* Main Grid */
+.profile-main-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
+.profile-sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+.award-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.award-row:last-child { border-bottom: none; }
+.award-row div { display: flex; flex-direction: column; gap: 2px; }
+.award-row strong { font-family: var(--font-serif); font-size: 0.9rem; color: var(--ivory); }
+.award-row span:not(.badge) { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; color: var(--text-muted); text-transform: uppercase; }
+.summary-item {}
+
+@media (max-width: 1024px) { .profile-main-grid { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+  .profile-hero { flex-direction: column; gap: 0; }
+  .profile-hero-image { padding: 24px 24px 0; }
+  .profile-hero-info { padding: 16px 24px 24px; }
+  .profile-number { font-size: 3rem; right: 16px; top: 16px; }
+  .profile-quick-stats { grid-template-columns: repeat(3,1fr); }
+}

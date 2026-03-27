@@ -1,0 +1,116 @@
+/* GOLDEN ROCK FC — CLUB PAGE */
+
+.club-header { margin-bottom: 40px; }
+
+/* Leadership Grid */
+.leadership-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; margin-bottom: 0; }
+
+/* Coach Card */
+.coach-card { padding: 0; overflow: hidden; display: grid; grid-template-columns: 200px 1fr; }
+.coach-image-frame {
+  position: relative;
+  background: linear-gradient(160deg, var(--violet-d), var(--violet), rgba(201,152,10,0.2));
+  display: flex; align-items: flex-end; justify-content: center;
+  min-height: 280px;
+  overflow: hidden;
+}
+.coach-avatar {
+  width: 120px; height: 120px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--gold-d), var(--gold));
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  color: var(--bg-dark);
+  margin-bottom: 60px;
+  border: 2px solid rgba(201,152,10,0.5);
+  box-shadow: 0 8px 32px var(--gold-glow);
+  animation: float 4s ease-in-out infinite;
+}
+.coach-name-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, rgba(10,8,16,0.9), transparent);
+  padding: 20px 16px 14px;
+  text-align: center;
+}
+.coach-name-overlay strong { display: block; font-family: var(--font-serif); font-size: 0.95rem; color: var(--ivory); }
+.coach-name-overlay span { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); }
+
+.coach-info { padding: 28px; }
+.coach-info h3 { font-family: var(--font-serif); font-size: 1.3rem; color: var(--ivory); margin-bottom: 12px; }
+.coach-info > p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 20px; }
+
+.training-schedule h4 {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+.training-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border);
+  margin-bottom: 8px;
+  transition: var(--transition);
+}
+.training-item:hover { border-color: var(--border-bright); }
+.training-item strong { display: block; font-family: var(--font-serif); font-size: 0.9rem; color: var(--ivory); }
+.training-item span:not(.training-time) { font-size: 0.8rem; color: var(--text-muted); }
+.training-time {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  background: rgba(201,152,10,0.1);
+  border: 1px solid rgba(201,152,10,0.2);
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* Club Identity */
+.club-identity { padding: 28px; }
+.club-identity h3 { font-family: var(--font-serif); font-size: 1.2rem; color: var(--ivory); margin-bottom: 4px; }
+.identity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.identity-item:last-of-type { border-bottom: none; }
+.identity-icon { font-size: 1.1rem; margin-top: 2px; flex-shrink: 0; }
+.identity-item strong { display: block; font-family: var(--font-serif); font-size: 0.9rem; color: var(--ivory); margin-bottom: 3px; }
+.identity-item span { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+
+/* Assets */
+.assets-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-top: 28px; }
+
+/* Staff */
+.staff-section { padding: 28px; }
+.staff-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+.staff-header h3 { font-family: var(--font-serif); font-size: 1.2rem; color: var(--ivory); margin-bottom: 4px; }
+.staff-header p { font-size: 0.85rem; color: var(--text-muted); }
+.staff-member { display: flex; align-items: center; gap: 10px; }
+.staff-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--violet), var(--violet-l)); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700; color: var(--ivory); border: 1px solid var(--border-bright); flex-shrink: 0; }
+.staff-row td:first-child span { font-family: var(--font-serif); font-size: 0.95rem; color: var(--ivory); }
+.staff-detail-btn { background: none; border: 1px solid var(--border); color: var(--gold); font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 14px; border-radius: 6px; cursor: pointer; transition: var(--transition); }
+.staff-detail-btn:hover { border-color: var(--gold); background: rgba(201,152,10,0.08); }
+
+@media (max-width: 1024px) {
+  .leadership-grid { grid-template-columns: 1fr; }
+  .coach-card { grid-template-columns: 160px 1fr; }
+  .assets-grid { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 768px) {
+  .coach-card { grid-template-columns: 1fr; }
+  .coach-image-frame { min-height: 200px; }
+  .assets-grid { grid-template-columns: repeat(2,1fr); }
+}

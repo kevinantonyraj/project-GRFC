@@ -1,0 +1,108 @@
+/* GOLDEN ROCK FC — TOURNAMENTS PAGE */
+
+/* Hero Banner */
+.tournament-hero-banner {
+  background: linear-gradient(135deg, var(--bg-dark), var(--violet-d), rgba(201,152,10,0.15));
+  border-bottom: 1px solid var(--border);
+  padding: 60px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.tournament-hero-banner::before {
+  content: '🏆';
+  position: absolute;
+  right: 80px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 12rem;
+  opacity: 0.04;
+  pointer-events: none;
+}
+.tournament-hero-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 40px;
+}
+.titles-badge {
+  background: linear-gradient(135deg, rgba(201,152,10,0.15), rgba(201,152,10,0.05));
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius-lg);
+  padding: 24px 32px;
+  text-align: center;
+  min-width: 160px;
+  flex-shrink: 0;
+}
+.titles-icon { font-size: 2rem; display: block; margin-bottom: 8px; }
+.titles-count {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, var(--gold), var(--gold-l));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+  line-height: 1;
+}
+.titles-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 4px;
+}
+
+/* Filter */
+.tour-filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px; }
+.tf2-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--ivory-muted); padding: 7px 20px; border-radius: 20px; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: var(--transition); }
+.tf2-btn:hover { border-color: var(--border-bright); color: var(--ivory); }
+.tf2-btn.active { background: linear-gradient(135deg, var(--gold-d), var(--gold)); border-color: var(--gold); color: var(--bg-dark); }
+
+/* Past Campaigns Header */
+.past-campaigns-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+.campaign-sort { display: flex; gap: 10px; }
+
+/* Tournament Cards */
+.tournament-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+.tournament-card { padding: 0; overflow: hidden; }
+.tc-status-bar { height: 3px; width: 100%; }
+.champions-bar { background: linear-gradient(90deg, var(--gold-d), var(--gold), var(--gold-l)); }
+.runners-bar   { background: linear-gradient(90deg, var(--ivory-muted), var(--ivory-d)); }
+.semis-bar     { background: linear-gradient(90deg, var(--violet), var(--violet-l)); }
+
+.tc-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px 4px; }
+.tc-trophy { font-size: 1.3rem; animation: float 3s ease-in-out infinite; }
+.tc-title { font-family: var(--font-serif); font-size: 1.05rem; color: var(--ivory); padding: 0 20px 8px; font-weight: 700; }
+.tc-dates { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.06em; color: var(--text-muted); padding: 0 20px 16px; line-height: 1.7; }
+.tc-stats { display: flex; justify-content: space-around; padding: 14px 20px; background: rgba(0,0,0,0.2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.tc-stats > div { text-align: center; }
+.tc-stats span { font-family: var(--font-display); font-size: 1.8rem; color: var(--ivory); display: block; line-height: 1; }
+.gold-text { color: var(--gold) !important; }
+.tc-stats small { font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
+.tc-squad { padding: 14px 20px; }
+.tc-squad-label { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 10px; }
+.tc-squad-avatars { display: flex; gap: 6px; flex-wrap: wrap; }
+.tsa { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--violet), var(--violet-l)); border: 1px solid var(--border-bright); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 0.58rem; color: var(--ivory); transition: var(--transition); }
+.tsa:hover { transform: scale(1.15); z-index: 1; }
+.tournament-card:last-child > a { margin: 0 20px 20px; }
+
+/* Partners */
+.partners-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 24px; }
+.partner-card { display: flex; align-items: center; gap: 14px; padding: 16px 20px; }
+.partner-badge { width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, var(--violet-d), var(--violet)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 0.85rem; color: var(--ivory); flex-shrink: 0; border: 1px solid var(--border-bright); }
+.partner-card div { flex: 1; }
+.partner-card strong { display: block; font-family: var(--font-serif); font-size: 0.95rem; color: var(--ivory); }
+.partner-card span { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em; color: var(--text-muted); text-transform: uppercase; }
+
+@media (max-width: 1024px) { .tournament-cards-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) {
+  .tournament-hero-banner { padding: 40px 20px; }
+  .tournament-hero-content { flex-direction: column; }
+  .tournament-cards-grid { grid-template-columns: 1fr; }
+  .partners-grid { grid-template-columns: 1fr; }
+}

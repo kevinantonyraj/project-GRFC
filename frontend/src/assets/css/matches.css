@@ -1,0 +1,198 @@
+/* GOLDEN ROCK FC — MATCHES PAGE */
+
+.page-hero { margin-bottom: 40px; }
+
+/* Filter Bar */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+.filter-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.filter-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--ivory-muted);
+  padding: 7px 18px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.filter-btn:hover { border-color: var(--border-bright); color: var(--ivory); }
+.filter-btn.active {
+  background: linear-gradient(135deg, var(--gold-d), var(--gold));
+  border-color: var(--gold);
+  color: var(--bg-dark);
+}
+
+/* Match List */
+.match-list { display: flex; flex-direction: column; gap: 16px; }
+.match-row { overflow: hidden; transition: var(--transition); }
+.match-row.hidden { display: none; }
+
+.match-row-main {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 28px;
+}
+.match-team {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.home-side  { flex-direction: row-reverse; text-align: right; }
+.away-side  { flex-direction: row; }
+
+.team-badge {
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--violet-d), var(--violet));
+  border: 1px solid var(--border-bright);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--ivory);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-violet);
+}
+.home-badge {
+  background: linear-gradient(135deg, var(--gold-d), var(--gold));
+  color: var(--bg-dark);
+  border-color: var(--gold);
+  box-shadow: var(--shadow-gold);
+}
+.team-placement {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+.match-team strong {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  color: var(--ivory);
+  display: block;
+}
+
+.match-row-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 160px;
+}
+.competition-tag {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(92,26,138,0.25);
+  border: 1px solid rgba(92,26,138,0.4);
+  color: var(--violet-l);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.competition-tag.champions {
+  background: rgba(201,152,10,0.15);
+  border-color: var(--border-bright);
+  color: var(--gold-l);
+}
+.competition-tag.derby {
+  background: rgba(239,68,68,0.1);
+  border-color: rgba(239,68,68,0.3);
+  color: #f87171;
+}
+
+.match-row-score {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rs-away, .rs-home {
+  font-family: var(--font-display);
+  font-size: 2.6rem;
+  line-height: 1;
+  color: var(--ivory);
+}
+.rs-colon {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--text-muted);
+}
+
+.match-row-footer {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 28px;
+  border-top: 1px solid var(--border);
+  background: rgba(0,0,0,0.15);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.match-expand-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.match-expand-btn:hover { color: var(--gold-l); }
+
+/* Expand Panel */
+.match-detail-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(0.25,0.8,0.25,1);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 0 28px;
+}
+.match-detail-panel.open {
+  max-height: 300px;
+  padding: 20px 28px;
+  border-top: 1px solid var(--border);
+}
+.detail-scorers strong,
+.detail-squad strong {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 12px;
+}
+.mini-squad-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
+@media (max-width: 768px) {
+  .match-row-main { grid-template-columns: 1fr; gap: 12px; }
+  .match-row-center { order: -1; }
+  .home-side, .away-side { flex-direction: row; text-align: left; }
+  .match-detail-panel { grid-template-columns: 1fr; }
+}
