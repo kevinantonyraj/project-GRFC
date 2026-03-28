@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home";
 
@@ -11,4 +12,4 @@ function App() {
   );
 }
 
-export default App;git 
+export default App;
