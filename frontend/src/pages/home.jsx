@@ -6,7 +6,6 @@ import useScrollReveal    from '../hooks/useScrollReveal';
 import useCounterAnimation from '../hooks/useCounterAnimation';
 import useProgressBar     from '../hooks/useProgressBar';
 import useTilt            from '../hooks/useTilt';
-import useCursor          from '../hooks/useCursor';
 import usePageLoader      from '../hooks/usePageLoader';
 
 /* ── Data ─────────────────────────────────────────────────── */
@@ -68,7 +67,7 @@ const SNAPSHOT = [
 export default function Home() {
   /* ── Global hooks ──────────────────────────────────────── */
   usePageLoader();
-  useCursor();
+  
   useScrollReveal();
   useCounterAnimation();
   useProgressBar();
@@ -240,9 +239,7 @@ export default function Home() {
         <div className="loader-bar"><div className="loader-bar-fill" /></div>
       </div>
 
-      {/* ── Custom Cursor ──────────────────────────────────── */}
-      <div className="cursor-dot" />
-      <div className="cursor-ring" />
+
 
       {/* ── Background ─────────────────────────────────────── */}
       <div className="bg-mesh" />
@@ -488,30 +485,7 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="divider" />
-
-        {/* ══ SEASON SNAPSHOT ══════════════════════════════════ */}
-        <section className="section snapshot-section">
-          <div data-reveal>
-            <span className="section-eyebrow">Season 2024/25</span>
-            <h2 className="section-title">Season <span>Snapshot</span></h2>
-          </div>
-          <div className="snapshot-grid">
-            {SNAPSHOT.map(({ label, count, width, delay, suffix }) => (
-              <div key={label} className="snapshot-item" data-reveal data-delay={delay}>
-                <div className="snapshot-label">{label}</div>
-                <div className="snapshot-value">
-                  <span data-count={count}>0</span>
-                  {suffix && suffix}
-                </div>
-                <div className="progress-bar">
-                  <div className="progress-fill" data-width={width} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
+        
       </div>
     <Footer/>
     </>
