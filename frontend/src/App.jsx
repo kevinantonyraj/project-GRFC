@@ -1,7 +1,7 @@
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/home";
-import Daily from "./pages/Daily";
+import Home from "./pages/Home";
+import Daily from "./pages/daily";
 import Matches from "./pages/matches"
 import Players from "./pages/players";
 import PlayerProfile from "./pages/playersprofile";

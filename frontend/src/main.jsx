@@ -11,4 +11,3 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>,
 )
 
-just a sample code 
