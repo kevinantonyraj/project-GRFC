@@ -22,6 +22,9 @@ class TeamSerializer(serializers.ModelSerializer):
 # ═══════════════════════════════════════════════════════════
 class PlayerSerializer(serializers.ModelSerializer):
     current_team = TeamSerializer(read_only=True)
+    total_appearances = serializers.IntegerField(read_only=True)
+    total_goals       = serializers.IntegerField(read_only=True)
+    total_assists     = serializers.IntegerField(read_only=True)
 
     class Meta:
         model  = Player

@@ -1,112 +1,18 @@
-import React, { useState } from 'react';
-import Navbar from '../components/Navbar.jsx';
-import Footer from '../components/Footer.jsx';
-
+import React, { useState, useEffect } from 'react';
+import Navbar  from '../components/Navbar.jsx';
+import Footer  from '../components/Footer.jsx';
+import { api } from '../../../backend/api/api.js';
+import '../assets/css/global.css';
 import '../assets/css/matches.css';
-import useScrollReveal from '../hooks/useScrollReveal';
-import useTilt         from '../hooks/useTilt';
-import usePageLoader   from '../hooks/usePageLoader';
+import useTilt       from '../hooks/useTilt';
+import usePageLoader from '../hooks/usePageLoader';
 
-/* ── Match Data ──────────────────────────────────────────── */
-const MATCHES = [
-  {
-    id:          1,
-    result:      'win',
-    competition: { label: 'Premier League', cls: '' },
-    teamA:       { code: 'RS', name: 'Royal Strikers',  side: 'AWAY', style: {} },
-    teamB:       { code: 'GR', name: 'Golden Rock FC',  side: 'HOME', style: {} },
-    scoreA:      3,
-    scoreB:      1,
-    date:        'Oct 24, 2023 · 19:00',
-    venue:       'Thunder Arena',
-    scorers:     [
-      { name: 'Marcus Silva',  min: "23'" },
-      { name: 'Jordan Webb',   min: "67'" },
-      { name: 'Marcus Silva',  min: "89'" },
-    ],
-    squad: [
-      { name: 'Sterling',   role: 'GK',  cls: 'gk'  },
-      { name: 'Henderson',  role: 'DEF', cls: 'def' },
-      { name: 'Walker',     role: 'DEF', cls: 'def' },
-      { name: 'De Bruyne',  role: 'MID', cls: 'mid' },
-      { name: 'Silva',      role: 'FWD', cls: 'fwd' },
-      { name: 'Webb',       role: 'FWD', cls: 'fwd' },
-    ],
-    delay: 0,
-  },
-  {
-    id:          2,
-    result:      'draw',
-    competition: { label: 'Premier League', cls: '' },
-    teamA:       { code: 'IW', name: 'Iron Wall FC',   side: 'HOME', style: { background: 'linear-gradient(135deg,#1a2a4a,#2a3a6a)' } },
-    teamB:       { code: 'GR', name: 'Golden Rock FC', side: 'AWAY', style: {} },
-    scoreA:      0,
-    scoreB:      0,
-    date:        'Oct 18, 2023 · 20:30',
-    venue:       'The Fortress',
-    scorers:     [],
-    squad:       [],
-    delay:       80,
-  },
-  {
-    id:          3,
-    result:      'loss',
-    competition: { label: 'Champions Cup', cls: 'champions' },
-    teamA:       { code: 'TU', name: 'Titan United',   side: 'HOME', style: { background: 'linear-gradient(135deg,#2a1a3a,#4a2a6a)' } },
-    teamB:       { code: 'GR', name: 'Golden Rock FC', side: 'AWAY', style: {} },
-    scoreA:      2,
-    scoreB:      1,
-    date:        'Oct 12, 2023 · 18:45',
-    venue:       'Titan Stadium',
-    scorers:     [{ name: 'Leon Garet', min: "55'" }],
-    squad:       [],
-    delay:       160,
-  },
-  {
-    id:          4,
-    result:      'win',
-    competition: { label: 'Premier League', cls: '' },
-    teamA:       { code: 'SH', name: 'Sea Hawks',      side: 'AWAY', style: { background: 'linear-gradient(135deg,#0a2a1a,#1a4a2a)' } },
-    teamB:       { code: 'GR', name: 'Golden Rock FC', side: 'HOME', style: {} },
-    scoreA:      4,
-    scoreB:      0,
-    date:        'Oct 05, 2023 · 15:00',
-    venue:       'Thunder Arena',
-    scorers:     [
-      { name: 'Marcus Silva', min: "12'" },
-      { name: 'Jordan Webb',  min: "34'" },
-      { name: 'Leon Garet',   min: "56'" },
-      { name: 'Marcus Silva', min: "78'" },
-    ],
-    squad:       [],
-    delay:       240,
-  },
-  {
-    id:          5,
-    result:      'draw',
-    competition: { label: 'City Derby', cls: 'derby' },
-    teamA:       { code: 'GL', name: 'Golden Lions',   side: 'HOME', style: { background: 'linear-gradient(135deg,#2a1a00,#4a3a00)' } },
-    teamB:       { code: 'GR', name: 'Golden Rock FC', side: 'AWAY', style: {} },
-    scoreA:      2,
-    scoreB:      2,
-    date:        'Sep 28, 2023 · 21:00',
-    venue:       'Lions Den',
-    scorers:     [
-      { name: 'David Thorne', min: "22'" },
-      { name: 'Jordan Webb',  min: "71'" },
-    ],
-    squad:       [],
-    delay:       320,
-  },
-];
-
+/* ── Filter options ──────────────────────────────────────── */
 const FILTERS = [
-  { label: 'All',         value: 'all'    },
-  { label: 'Wins',        value: 'win'    },
-  { label: 'Draws',       value: 'draw'   },
-  { label: 'Losses',      value: 'loss'   },
-  { label: 'This Month',  value: 'month'  },
-  { label: 'This Season', value: 'season' },
+  { label: 'All',        value: 'all'  },
+  { label: 'Wins',       value: 'win'  },
+  { label: 'Draws',      value: 'draw' },
+  { label: 'Losses',     value: 'loss' },
 ];
 
 const BADGE = {
@@ -115,71 +21,117 @@ const BADGE = {
   loss: { cls: 'badge-loss', label: '⊗ LOSS' },
 };
 
-/* ── Match Row ───────────────────────────────────────────── */
-const MatchRow = ({ match, hidden }) => {
+/* ── Skeleton ────────────────────────────────────────────── */
+const Skeleton = ({ width = '100%', height = '20px', style = {} }) => (
+  <div style={{
+    width, height, borderRadius: '6px',
+    background: 'linear-gradient(90deg,var(--bg-card) 25%,rgba(255,255,255,0.05) 50%,var(--bg-card) 75%)',
+    backgroundSize: '200% 100%',
+    animation: 'shimmer 1.5s infinite',
+    ...style,
+  }} />
+);
+
+/* ── Repeating Scroll Reveal ─────────────────────────────── */
+const useRepeatScrollReveal = () => {
+  useEffect(() => {
+    const els = document.querySelectorAll('[data-reveal]');
+    const obs = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const delay = entry.target.dataset.delay || 0;
+            setTimeout(() => entry.target.classList.add('revealed'), Number(delay));
+          } else {
+            entry.target.classList.remove('revealed');
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    );
+    els.forEach(el => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+};
+
+/* ── Single Match Row ────────────────────────────────────── */
+const MatchRow = ({ match, index }) => {
   const [open, setOpen] = useState(false);
-
-  const toggle = () => setOpen((o) => !o);
-
-  const badge = BADGE[match.result];
+  const badge = BADGE[match.result] || BADGE.draw;
 
   return (
     <div
-      className={`match-row card${hidden ? ' hidden' : ''}`}
+      className="match-row card"
       data-result={match.result}
       data-reveal
-      data-delay={match.delay}
+      data-delay={index * 80}
     >
       {/* Main row */}
       <div className="match-row-main">
         <div className="match-team away-side">
-          <div className="team-badge away-badge" style={match.teamA.style}>{match.teamA.code}</div>
+          <div
+            className="team-badge away-badge"
+            style={match.home_team_badge ? { background: match.home_team_badge } : {}}
+          >
+            {match.home_team_code}
+          </div>
           <div>
-            <div className="team-placement">{match.teamA.side}</div>
-            <strong>{match.teamA.name}</strong>
+            <div className="team-placement">
+              {match.match_type === 'internal' ? 'TEAM A' : 'AWAY'}
+            </div>
+            <strong>{match.home_team_name}</strong>
           </div>
         </div>
 
         <div className="match-row-center">
-          <span className={`competition-tag${match.competition.cls ? ' ' + match.competition.cls : ''}`}>
-            {match.competition.label}
-          </span>
+          <span className="competition-tag">{match.competition}</span>
           <div className="match-row-score">
-            <span className="rs-away">{match.scoreA}</span>
+            <span className="rs-away">{match.home_score}</span>
             <span className="rs-colon">:</span>
-            <span className="rs-home">{match.scoreB}</span>
+            <span className="rs-home">{match.away_score}</span>
           </div>
           <span className={`badge ${badge.cls}`}>{badge.label}</span>
         </div>
 
         <div className="match-team home-side">
-          <div className="team-badge home-badge" style={match.teamB.style}>{match.teamB.code}</div>
+          <div
+            className="team-badge home-badge"
+            style={match.away_team_badge ? { background: match.away_team_badge } : {}}
+          >
+            {match.away_team_code}
+          </div>
           <div>
-            <div className="team-placement">{match.teamB.side}</div>
-            <strong>{match.teamB.name}</strong>
+            <div className="team-placement">
+              {match.match_type === 'internal' ? 'TEAM B' : 'HOME'}
+            </div>
+            <strong>{match.away_team_name}</strong>
           </div>
         </div>
       </div>
 
-      {/* Footer row */}
+      {/* Footer */}
       <div className="match-row-footer">
-        <span>📅 {match.date}</span>
+        <span>
+          📅 {new Date(match.date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}
+          {' · '}
+          {new Date(match.date).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' })}
+        </span>
         <span>📍 {match.venue}</span>
-        <button className="match-expand-btn" onClick={toggle}>
+        <button className="match-expand-btn" onClick={() => setOpen(o => !o)}>
           {open ? 'HIDE DETAILS ▴' : 'VIEW SQUAD & SCORERS ▾'}
         </button>
       </div>
 
-      {/* Expandable detail panel */}
+      {/* Expandable panel */}
       <div className={`match-detail-panel${open ? ' open' : ''}`}>
         <div className="detail-scorers">
-          {match.scorers.length > 0 ? (
+          {match.goals?.filter(g => !g.is_own_goal).length > 0 ? (
             <>
               <strong>Scorers</strong>
-              {match.scorers.map(({ name, min }, i) => (
+              {match.goals.filter(g => !g.is_own_goal).map((g, i) => (
                 <div className="goal-item" key={i}>
-                  <span>{name}</span>
-                  <span className="goal-min">{min}</span>
+                  <span>{g.player_name}</span>
+                  <span className="goal-min">{g.minute}'</span>
                 </div>
               ))}
             </>
@@ -188,12 +140,21 @@ const MatchRow = ({ match, hidden }) => {
           )}
         </div>
 
-        {match.squad.length > 0 && (
+        {match.appearances?.length > 0 && (
           <div className="detail-squad">
             <strong>Squad</strong>
             <div className="mini-squad-tags">
-              {match.squad.map(({ name, role, cls }) => (
-                <span key={name} className={`squad-tag ${cls}`}>{name} {role}</span>
+              {match.appearances.map((a, i) => (
+                <span
+                  key={i}
+                  className={`squad-tag ${
+                    a.player_position === 'GK'  ? 'gk'  :
+                    a.player_position === 'DEF' ? 'def' :
+                    a.player_position === 'MID' ? 'mid' : 'fwd'
+                  }`}
+                >
+                  {a.player_name} {a.player_position}
+                </span>
               ))}
             </div>
           </div>
@@ -208,35 +169,49 @@ const MatchRow = ({ match, hidden }) => {
 ═══════════════════════════════════════════════════════════ */
 export default function Matches() {
   usePageLoader();
-  useScrollReveal();
+  useRepeatScrollReveal();
   useTilt();
 
+  /* ── API state ─────────────────────────────────────────── */
+  const [matches,      setMatches]      = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState(null);
   const [activeFilter, setActiveFilter] = useState('all');
-  const [loadState,    setLoadState]    = useState('idle'); // idle | loading | done
+  const [loadState,    setLoadState]    = useState('idle');
 
-  const handleFilter = (value) => setActiveFilter(value);
+  /* ── Fetch on filter change ────────────────────────────── */
+  useEffect(() => {
+    const fetchMatches = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await api.matches(activeFilter);
+        setMatches(data);
+      } catch (err) {
+        setError('Failed to load matches.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMatches();
+  }, [activeFilter]);
 
   const handleLoadMore = () => {
     setLoadState('loading');
     setTimeout(() => setLoadState('done'), 1200);
   };
 
-  const isHidden = (match) => {
-    if (activeFilter === 'all') return false;
-    return match.result !== activeFilter;
-  };
-
+  /* ══════════════════════════════════════════════════════════
+     RENDER
+  ══════════════════════════════════════════════════════════ */
   return (
     <>
-      {/* Page Loader */}
       <div className="page-loader" id="loader">
         <div className="loader-logo">GOLDEN ROCK FC</div>
         <div className="loader-bar"><div className="loader-bar-fill" /></div>
       </div>
-
-      {/* Background */}
-      <div className="bg-mesh" />
-      <div className="bg-grain" />
+      <div className="bg-mesh" /><div className="bg-grain" />
 
       <Navbar />
 
@@ -259,18 +234,38 @@ export default function Matches() {
               <button
                 key={value}
                 className={`filter-btn${activeFilter === value ? ' active' : ''}`}
-                onClick={() => handleFilter(value)}
+                onClick={() => setActiveFilter(value)}
               >
                 {label}
               </button>
             ))}
           </div>
 
+          {error && (
+            <p style={{ color: '#f87171', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', padding: '12px' }}>
+              ⚠ {error}
+            </p>
+          )}
+
           {/* Match List */}
-          <div className="match-list" id="matchList">
-            {MATCHES.map((match) => (
-              <MatchRow key={match.id} match={match} hidden={isHidden(match)} />
-            ))}
+          <div className="match-list">
+            {loading ? (
+              [1, 2, 3].map(i => (
+                <div key={i} className="card" style={{ padding: '20px', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <Skeleton height="16px" width="40%" />
+                  <Skeleton height="60px" />
+                  <Skeleton height="14px" width="60%" />
+                </div>
+              ))
+            ) : matches.length > 0 ? (
+              matches.map((match, idx) => (
+                <MatchRow key={match.id} match={match} index={idx} />
+              ))
+            ) : (
+              <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>
+                No matches found.
+              </div>
+            )}
           </div>
 
           {/* Load More */}

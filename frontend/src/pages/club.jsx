@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar.jsx';
-import Footer from '../components/Footer.jsx';
-
+import Navbar  from '../components/Navbar.jsx';
+import Footer  from '../components/Footer.jsx';
+import { api } from '../../../backend/api/api.js';
+import '../assets/css/global.css';
 import '../assets/css/club.css';
-import useScrollReveal     from '../hooks/useScrollReveal';
 import useCounterAnimation from '../hooks/useCounterAnimation';
 import useTilt             from '../hooks/useTilt';
 import usePageLoader       from '../hooks/usePageLoader';
 
-/* ── Data ────────────────────────────────────────────────── */
+/* ── Static data (not from DB) ───────────────────────────── */
 const TRAINING = [
-  { day: 'Monday',    desc: 'Tactical & Strategy',       time: '18:00 – 20:00' },
-  { day: 'Wednesday', desc: 'Physical Conditioning',     time: '17:30 – 19:30' },
-  { day: 'Friday',    desc: 'Set Pieces & Drills',       time: '18:00 – 20:00' },
+  { day: 'Monday',    desc: 'Tactical & Strategy',   time: '18:00 – 20:00' },
+  { day: 'Wednesday', desc: 'Physical Conditioning', time: '17:30 – 19:30' },
+  { day: 'Friday',    desc: 'Set Pieces & Drills',   time: '18:00 – 20:00' },
 ];
 
 const IDENTITY = [
@@ -22,53 +22,51 @@ const IDENTITY = [
 ];
 
 const ASSETS = [
-  { icon: '⚽', count: 18,  label: 'Match Balls'     },
-  { icon: '🥅', count: 4,   label: 'Training Nets'   },
-  { icon: '🔶', count: 120, label: 'Cones & Markers'  },
-  { icon: '🩺', count: 3,   label: 'First Aid Kits'  },
+  { icon: '⚽', count: 18,  label: 'Match Balls'    },
+  { icon: '🥅', count: 4,   label: 'Training Nets'  },
+  { icon: '🔶', count: 120, label: 'Cones & Markers' },
+  { icon: '🩺', count: 3,   label: 'First Aid Kits' },
 ];
 
-const STAFF = [
-  {
-    initials: 'JA', name: 'John Archer',     role: 'Club Captain',      joined: 'Jan 2012',
-    bio: 'Leading the team with 12 years of service at Golden Rock FC.',
-    badgeCls: 'badge-gold',   badgeStyle: {},
-    avatarStyle: {},
-  },
-  {
-    initials: 'SJ', name: 'Sarah Jenkins',   role: 'Treasurer',         joined: 'Mar 2015',
-    bio: 'Managing club finances and budget planning since 2015.',
-    badgeCls: 'badge-draw',   badgeStyle: {},
-    avatarStyle: { background: 'linear-gradient(135deg,#6a1a1a,#9a2a2a)' },
-  },
-  {
-    initials: 'DW', name: 'David Wu',        role: 'Club Secretary',    joined: 'Jun 2018',
-    bio: 'Handles all administrative duties and official correspondence.',
-    badgeCls: 'badge-violet', badgeStyle: {},
-    avatarStyle: { background: 'linear-gradient(135deg,#1a2a4a,#2a3a6a)' },
-  },
-  {
-    initials: 'MV', name: 'Michael Vance',   role: 'Youth Coordinator', joined: 'Nov 2019',
-    bio: 'Manages youth academy development and player pathways.',
-    badgeCls: '',
-    badgeStyle: { background: 'rgba(34,197,94,0.1)', color: '#86efac', border: '1px solid rgba(34,197,94,0.3)' },
-    avatarStyle: { background: 'linear-gradient(135deg,#0a2a1a,#1a4a2a)' },
-  },
-  {
-    initials: 'ER', name: 'Elena Rodriguez', role: 'Medic',             joined: 'Feb 2021',
-    bio: 'Certified sports physiotherapist keeping players match-ready.',
-    badgeCls: '',
-    badgeStyle: { background: 'rgba(239,68,68,0.1)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.3)' },
-    avatarStyle: { background: 'linear-gradient(135deg,#3a0a2a,#6a1a4a)' },
-  },
-];
+/* ── Skeleton ────────────────────────────────────────────── */
+const Skeleton = ({ width = '100%', height = '20px', style = {} }) => (
+  <div style={{
+    width, height, borderRadius: '6px',
+    background: 'linear-gradient(90deg,var(--bg-card) 25%,rgba(255,255,255,0.05) 50%,var(--bg-card) 75%)',
+    backgroundSize: '200% 100%',
+    animation: 'shimmer 1.5s infinite',
+    ...style,
+  }} />
+);
+
+/* ── Repeating Scroll Reveal ─────────────────────────────── */
+const useRepeatScrollReveal = () => {
+  useEffect(() => {
+    const els = document.querySelectorAll('[data-reveal]');
+    const obs = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const delay = entry.target.dataset.delay || 0;
+            setTimeout(() => entry.target.classList.add('revealed'), Number(delay));
+          } else {
+            entry.target.classList.remove('revealed');
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    );
+    els.forEach(el => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+};
 
 /* ── Staff Modal ─────────────────────────────────────────── */
 const StaffModal = ({ member, onClose }) => {
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    const fn = e => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', fn);
+    return () => document.removeEventListener('keydown', fn);
   }, [onClose]);
 
   return (
@@ -80,12 +78,9 @@ const StaffModal = ({ member, onClose }) => {
         zIndex: 9990,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div
-        className="staff-modal-card card"
-        style={{ maxWidth: '400px', width: '90%', padding: '32px', textAlign: 'center', position: 'relative' }}
-      >
+      <div className="card" style={{ maxWidth: '400px', width: '90%', padding: '32px', textAlign: 'center', position: 'relative' }}>
         <button
           onClick={onClose}
           style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}
@@ -94,7 +89,8 @@ const StaffModal = ({ member, onClose }) => {
         </button>
         <div
           className="staff-avatar"
-          style={{ width: '72px', height: '72px', fontSize: '1.4rem', margin: '0 auto 16px' }}
+          style={{ width: '72px', height: '72px', fontSize: '1.4rem', margin: '0 auto 16px',
+            ...(member.avatar_style ? {} : {}) }}
         >
           {member.initials}
         </div>
@@ -105,7 +101,7 @@ const StaffModal = ({ member, onClose }) => {
           {member.role}
         </p>
         <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
-          Joined: {member.joined}
+          Joined: {member.joined_date}
         </p>
         <p style={{ fontSize: '0.92rem', color: 'var(--ivory-d)', lineHeight: 1.7, fontStyle: 'italic' }}>
           {member.bio}
@@ -120,35 +116,52 @@ const StaffModal = ({ member, onClose }) => {
 ═══════════════════════════════════════════════════════════ */
 export default function Club() {
   usePageLoader();
-  useScrollReveal();
+  useRepeatScrollReveal();
   useCounterAnimation();
   useTilt();
 
+  /* ── API state ─────────────────────────────────────────── */
+  const [staff,   setStaff]   = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState(null);
+
+  useEffect(() => {
+    const fetchClub = async () => {
+      try {
+        setLoading(true);
+        const data = await api.club();
+        setStaff(data.staff || []);
+      } catch (err) {
+        setError('Failed to load club data.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchClub();
+  }, []);
+
   const [modalMember, setModalMember] = useState(null);
 
+  /* ══════════════════════════════════════════════════════════
+     RENDER
+  ══════════════════════════════════════════════════════════ */
   return (
     <>
-      {/* Page Loader */}
       <div className="page-loader" id="loader">
         <div className="loader-logo">GOLDEN ROCK FC</div>
         <div className="loader-bar"><div className="loader-bar-fill" /></div>
       </div>
-
-      {/* Background */}
-      <div className="bg-mesh" />
-      <div className="bg-grain" />
+      <div className="bg-mesh" /><div className="bg-grain" />
 
       <Navbar />
 
-      {/* Staff Modal */}
-      {modalMember && (
-        <StaffModal member={modalMember} onClose={() => setModalMember(null)} />
-      )}
+      {modalMember && <StaffModal member={modalMember} onClose={() => setModalMember(null)} />}
 
       <div className="page-wrapper">
         <section className="section">
 
-          {/* ── Club Header ──────────────────────────────── */}
+          {/* Club Header */}
           <div className="club-header" data-reveal>
             <span className="section-eyebrow">Inside the Club</span>
             <h1 className="section-title">Club <span>Operations</span></h1>
@@ -158,7 +171,7 @@ export default function Club() {
             </p>
           </div>
 
-          {/* ── Leadership Grid ───────────────────────────── */}
+          {/* Leadership Grid */}
           <div className="leadership-grid">
 
             {/* Coach Card */}
@@ -222,7 +235,7 @@ export default function Club() {
 
           <div className="divider" style={{ margin: '40px 0' }} />
 
-          {/* ── Assets & Logistics ───────────────────────── */}
+          {/* Assets */}
           <div data-reveal>
             <span className="section-eyebrow">Infrastructure</span>
             <h2 className="section-title" style={{ fontSize: '1.8rem' }}>
@@ -242,7 +255,7 @@ export default function Club() {
 
           <div className="divider" style={{ margin: '40px 0' }} />
 
-          {/* ── Staff & Members ───────────────────────────── */}
+          {/* Staff Table */}
           <div className="staff-section card" data-reveal>
             <div className="staff-header">
               <div>
@@ -254,6 +267,12 @@ export default function Club() {
               </a>
             </div>
 
+            {error && (
+              <p style={{ color: '#f87171', padding: '12px', fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>
+                ⚠ {error}
+              </p>
+            )}
+
             <table>
               <thead>
                 <tr>
@@ -264,35 +283,54 @@ export default function Club() {
                 </tr>
               </thead>
               <tbody>
-                {STAFF.map((member) => (
-                  <tr className="staff-row" key={member.name}>
-                    <td>
-                      <div className="staff-member">
-                        <div className="staff-avatar" style={member.avatarStyle}>
-                          {member.initials}
+                {loading ? (
+                  [1,2,3,4,5].map(i => (
+                    <tr key={i}>
+                      <td><div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}><Skeleton height="36px" width="36px" style={{ borderRadius: '50%' }} /><Skeleton height="14px" width="100px" /></div></td>
+                      <td><Skeleton height="22px" width="80px" /></td>
+                      <td><Skeleton height="14px" width="60px" /></td>
+                      <td><Skeleton height="28px" width="60px" /></td>
+                    </tr>
+                  ))
+                ) : staff.length > 0 ? (
+                  staff.map(member => (
+                    <tr className="staff-row" key={member.id}>
+                      <td>
+                        <div className="staff-member">
+                          <div
+                            className="staff-avatar"
+                            style={member.avatar_style ? { background: member.avatar_style } : {}}
+                          >
+                            {member.initials}
+                          </div>
+                          <span>{member.name}</span>
                         </div>
-                        <span>{member.name}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <span
-                        className={`badge${member.badgeCls ? ' ' + member.badgeCls : ''}`}
-                        style={member.badgeStyle}
-                      >
-                        {member.role}
-                      </span>
-                    </td>
-                    <td>{member.joined}</td>
-                    <td>
-                      <button
-                        className="staff-detail-btn"
-                        onClick={() => setModalMember(member)}
-                      >
-                        Details
-                      </button>
+                      </td>
+                      <td>
+                        <span
+                          className={`badge${member.badge_cls ? ' ' + member.badge_cls : ''}`}
+                        >
+                          {member.role}
+                        </span>
+                      </td>
+                      <td>{member.joined_date}</td>
+                      <td>
+                        <button
+                          className="staff-detail-btn"
+                          onClick={() => setModalMember(member)}
+                        >
+                          Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                      No staff members added yet.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>

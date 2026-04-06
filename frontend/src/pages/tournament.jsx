@@ -1,114 +1,128 @@
-import React, { useState } from 'react';
-import Navbar from '../components/Navbar.jsx';
-import Footer from '../components/Footer.jsx';
+import React, { useState, useEffect } from 'react';
+import Navbar  from '../components/Navbar.jsx';
+import Footer  from '../components/Footer.jsx';
+import { api } from '../../../backend/api/api.js';
 import '../assets/css/global.css';
 import '../assets/css/tournaments.css';
-import useScrollReveal     from '../hooks/useScrollReveal';
 import useCounterAnimation from '../hooks/useCounterAnimation';
 import useTilt             from '../hooks/useTilt';
 import usePageLoader       from '../hooks/usePageLoader';
 
-/* ── Data ────────────────────────────────────────────────── */
+/* ── Filter options ──────────────────────────────────────── */
 const FILTERS = [
-  { label: 'All',          value: 'all'      },
-  { label: 'Champions',    value: 'champions' },
-  { label: 'Runners Up',   value: 'runners'  },
-  { label: 'Semi-Finals',  value: 'semis'    },
+  { label: 'All',         value: 'all'      },
+  { label: 'Champions',   value: 'champions' },
+  { label: 'Runners Up',  value: 'runners'  },
+  { label: 'Semi-Finals', value: 'semis'    },
 ];
 
-const TOURNAMENTS = [
-  {
-    id:      1,
-    result:  'champions',
-    badge:   { cls: 'badge-gold',   label: 'Champions'   },
-    trophy:  true,
-    barCls:  'champions-bar',
-    title:   'Thunder Summer Cup 2023',
-    dates:   '📅 Aug 2023 · 📍 Thunder City Stadium',
-    stats:   [{ count: 16, label: 'Teams' }, { count: 6, label: 'Matches' }, { count: 14, label: 'Goals', gold: true }],
-    squad:   ['Jo','Ch','Ok','Ro','Ev','Pe'],
-    delay:   0,
-  },
-  {
-    id:      2,
-    result:  'runners',
-    badge:   { cls: 'badge-draw',   label: 'Runners Up'  },
-    trophy:  false,
-    barCls:  'runners-bar',
-    title:   'Regional Elite Invitational',
-    dates:   '📅 Jul 2023 · 📍 Green Valley Sports Complex',
-    stats:   [{ count: 8, label: 'Teams' }, { count: 4, label: 'Matches' }, { count: 9, label: 'Goals', gold: true }],
-    squad:   ['Jo','Ch','Ok'],
-    delay:   100,
-  },
-  {
-    id:      3,
-    result:  'champions',
-    badge:   { cls: 'badge-gold',   label: 'Champions'   },
-    trophy:  true,
-    barCls:  'champions-bar',
-    title:   'City Founders Trophy',
-    dates:   '📅 Mar 12 – 15, 2023 · 📍 Old Town Arena',
-    stats:   [{ count: 12, label: 'Teams' }, { count: 5, label: 'Matches' }, { count: 11, label: 'Goals', gold: true }],
-    squad:   ['Jo','Ro','Pe'],
-    delay:   200,
-  },
-  {
-    id:      4,
-    result:  'semis',
-    badge:   { cls: 'badge-violet', label: 'Semi-Finals' },
-    trophy:  false,
-    barCls:  'semis-bar',
-    title:   'Winter Futsal Masters',
-    dates:   '📅 Jan 05 – 08, 2023 · 📍 Thunder Indoor Arena',
-    stats:   [{ count: 24, label: 'Teams' }, { count: 7, label: 'Matches' }, { count: 22, label: 'Goals', gold: true }],
-    squad:   ['Ch','Ok','Ev'],
-    delay:   300,
-  },
-];
+const RESULT_BADGE = {
+  champions: { cls: 'badge-gold',   label: 'Champions'   },
+  runners:   { cls: 'badge-draw',   label: 'Runners Up'  },
+  semis:     { cls: 'badge-violet', label: 'Semi-Finals' },
+  quarters:  { cls: 'badge-violet', label: 'Quarter Finals' },
+};
 
-const PARTNERS = [
-  { initials: 'SS', name: 'Shadow Strikers FC',  last: 'Nov 12, 2023', bg: '' },
-  { initials: 'LU', name: 'Lightning United',    last: 'Oct 28, 2023', bg: 'linear-gradient(135deg,#1a2a4a,#0a3a6a)' },
-  { initials: 'OB', name: 'Oceanic Blue',        last: 'Sep 15, 2023', bg: 'linear-gradient(135deg,#0a1a3a,#1a2a5a)' },
-  { initials: 'RP', name: 'Red Peak Warriors',   last: 'Aug 02, 2023', bg: 'linear-gradient(135deg,#3a0a0a,#6a1a1a)' },
-  { initials: 'GG', name: 'Golden Gate Rovers',  last: 'Jul 19, 2023', bg: 'linear-gradient(135deg,#0a3a0a,#1a5a1a)' },
-  { initials: 'IC', name: 'Iron City FC',        last: 'Jun 24, 2023', bg: 'linear-gradient(135deg,#1a1a3a,#2a2a5a)' },
-];
+const RESULT_BAR = {
+  champions: 'champions-bar',
+  runners:   'runners-bar',
+  semis:     'semis-bar',
+  quarters:  'semis-bar',
+};
+
+/* ── Skeleton ────────────────────────────────────────────── */
+const Skeleton = ({ width = '100%', height = '20px', style = {} }) => (
+  <div style={{
+    width, height, borderRadius: '6px',
+    background: 'linear-gradient(90deg,var(--bg-card) 25%,rgba(255,255,255,0.05) 50%,var(--bg-card) 75%)',
+    backgroundSize: '200% 100%',
+    animation: 'shimmer 1.5s infinite',
+    ...style,
+  }} />
+);
+
+/* ── Repeating Scroll Reveal ─────────────────────────────── */
+const useRepeatScrollReveal = () => {
+  useEffect(() => {
+    const els = document.querySelectorAll('[data-reveal]');
+    const obs = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const delay = entry.target.dataset.delay || 0;
+            setTimeout(() => entry.target.classList.add('revealed'), Number(delay));
+          } else {
+            entry.target.classList.remove('revealed');
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    );
+    els.forEach(el => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+};
 
 /* ═══════════════════════════════════════════════════════════
    TOURNAMENTS COMPONENT
 ═══════════════════════════════════════════════════════════ */
 export default function Tournaments() {
   usePageLoader();
-  useScrollReveal();
+  useRepeatScrollReveal();
   useCounterAnimation();
   useTilt();
 
-  const [activeFilter, setActiveFilter] = useState('all');
+  /* ── API state ─────────────────────────────────────────── */
+  const [tournaments, setTournaments] = useState([]);
+  const [partners,    setPartners]    = useState([]);
+  const [totalTitles, setTotalTitles] = useState(0);
+  const [loading,     setLoading]     = useState(true);
+  const [error,       setError]       = useState(null);
+  const [activeFilter,setActiveFilter]= useState('all');
+  const [loadState,   setLoadState]   = useState('idle');
 
-  const isHidden = (card) => {
-    if (activeFilter === 'all') return false;
-    return !card.result.includes(activeFilter.split(' ')[0]);
-  };
+  /* ── Fetch on filter change ────────────────────────────── */
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const [tourData, clubData] = await Promise.all([
+          api.tournaments(activeFilter),
+          api.club(),
+        ]);
+        setTournaments(tourData);
+        setPartners(clubData.partners || []);
+        // Count champions only for title count
+        if (activeFilter === 'all') {
+          setTotalTitles(tourData.filter(t => t.result === 'champions').length);
+        }
+      } catch (err) {
+        setError('Failed to load tournament data.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAll();
+  }, [activeFilter]);
 
+  /* ══════════════════════════════════════════════════════════
+     RENDER
+  ══════════════════════════════════════════════════════════ */
   return (
     <>
-      {/* Page Loader */}
       <div className="page-loader" id="loader">
         <div className="loader-logo">GOLDEN ROCK FC</div>
         <div className="loader-bar"><div className="loader-bar-fill" /></div>
       </div>
-
-      {/* Background */}
-      <div className="bg-mesh" />
-      <div className="bg-grain" />
+      <div className="bg-mesh" /><div className="bg-grain" />
 
       <Navbar />
 
       <div className="page-wrapper">
 
-        {/* ── Tournament Hero Banner ──────────────────────── */}
+        {/* Tournament Hero Banner */}
         <div className="tournament-hero-banner">
           <div className="tournament-hero-content">
             <div data-reveal>
@@ -121,7 +135,7 @@ export default function Tournaments() {
             </div>
             <div className="titles-badge tilt-card" data-reveal data-delay="150">
               <span className="titles-icon">🏆</span>
-              <span className="titles-count" data-count="12">0</span>
+              <span className="titles-count" data-count={totalTitles}>0</span>
               <span className="titles-label">Titles Won</span>
             </div>
           </div>
@@ -129,7 +143,7 @@ export default function Tournaments() {
 
         <section className="section">
 
-          {/* ── Filter Bar ─────────────────────────────────── */}
+          {/* Filter Bar */}
           <div className="tour-filter-bar" data-reveal>
             {FILTERS.map(({ label, value }) => (
               <button
@@ -142,109 +156,133 @@ export default function Tournaments() {
             ))}
           </div>
 
-          {/* ── Past Campaigns Header ──────────────────────── */}
+          {/* Past Campaigns Header */}
           <div className="past-campaigns-header" data-reveal>
             <span className="section-eyebrow">Archive</span>
             <h2 className="section-title" style={{ fontSize: '1.8rem' }}>
               Past <span>Campaigns</span>
             </h2>
-            <div className="campaign-sort">
-              <select style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--ivory)', padding: '6px 12px', borderRadius: '8px', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', cursor: 'pointer' }}>
-                <option>Filter by Year</option>
-                <option>2023</option>
-                <option>2022</option>
-                <option>2021</option>
-              </select>
-              <select style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--ivory)', padding: '6px 12px', borderRadius: '8px', fontFamily: 'var(--font-mono)', fontSize: '0.68rem', cursor: 'pointer' }}>
-                <option>Sort by Result</option>
-                <option>Champions</option>
-                <option>Runners Up</option>
-              </select>
-            </div>
           </div>
 
-          {/* ── Tournament Cards Grid ──────────────────────── */}
-          <div className="tournament-cards-grid" id="tourGrid">
-            {TOURNAMENTS.map((t) => (
-              <div
-                key={t.id}
-                className="tournament-card card tilt-card"
-                data-result={t.result}
-                data-reveal
-                data-delay={t.delay}
-                style={{ display: isHidden(t) ? 'none' : '' }}
-              >
-                <div className={`tc-status-bar ${t.barCls}`} />
-                <div className="tc-header">
-                  <span className={`badge ${t.badge.cls}`}>{t.badge.label}</span>
-                  {t.trophy && <span className="tc-trophy">🏆</span>}
+          {error && (
+            <p style={{ color: '#f87171', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', padding: '12px' }}>
+              ⚠ {error}
+            </p>
+          )}
+
+          {/* Tournament Cards */}
+          <div className="tournament-cards-grid">
+            {loading ? (
+              [1,2,3,4].map(i => (
+                <div key={i} className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <Skeleton height="14px" width="40%" />
+                  <Skeleton height="20px" width="70%" />
+                  <Skeleton height="14px" width="60%" />
+                  <Skeleton height="40px" />
                 </div>
-                <h3 className="tc-title">{t.title}</h3>
-                <div className="tc-dates">{t.dates}</div>
-                <div className="tc-stats">
-                  {t.stats.map(({ count, label, gold }) => (
-                    <div key={label}>
-                      <span data-count={count}>0</span>
-                      <small className={gold ? 'gold-text' : ''}>{label}</small>
+              ))
+            ) : tournaments.length > 0 ? (
+              tournaments.map((t, idx) => {
+                const badge   = RESULT_BADGE[t.result] || RESULT_BADGE.semis;
+                const barCls  = RESULT_BAR[t.result]   || 'semis-bar';
+                return (
+                  <div
+                    key={t.id}
+                    className="tournament-card card tilt-card"
+                    data-reveal
+                    data-delay={idx * 100}
+                  >
+                    <div className={`tc-status-bar ${barCls}`} />
+                    <div className="tc-header">
+                      <span className={`badge ${badge.cls}`}>{badge.label}</span>
+                      {t.result === 'champions' && <span className="tc-trophy">🏆</span>}
                     </div>
-                  ))}
-                </div>
-                <div className="tc-squad">
-                  <span className="tc-squad-label">Tournament Squad</span>
-                  <div className="tc-squad-avatars">
-                    {t.squad.map((initials, i) => (
-                      <div className="tsa" key={i}>{initials}</div>
-                    ))}
+                    <h3 className="tc-title">{t.name}</h3>
+                    <div className="tc-dates">📅 {t.dates} · 📍 {t.venue}</div>
+                    <div className="tc-stats">
+                      <div><span data-count={t.total_teams}>0</span><small>Teams</small></div>
+                      <div><span data-count={t.total_matches}>0</span><small>Matches</small></div>
+                      <div><span data-count={t.total_goals}>0</span><small className="gold-text">Goals</small></div>
+                    </div>
+                    {t.tournament_squads?.length > 0 && (
+                      <div className="tc-squad">
+                        <span className="tc-squad-label">Tournament Squad</span>
+                        <div className="tc-squad-avatars">
+                          {t.tournament_squads.map((s, i) => (
+                            <div className="tsa" key={i} title={s.player_name}>
+                              {s.player_initials}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <a href="#" className="btn btn-outline" style={{ width: '100%', justifyContent: 'center', marginTop: '12px' }}>
+                      View Tournament Details →
+                    </a>
                   </div>
-                </div>
-                <a
-                  href="#"
-                  className="btn btn-outline"
-                  style={{ width: '100%', justifyContent: 'center', marginTop: '12px' }}
-                >
-                  View Tournament Details →
-                </a>
+                );
+              })
+            ) : (
+              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>
+                No tournaments found.
               </div>
-            ))}
+            )}
           </div>
 
-          {/* ── Load More ──────────────────────────────────── */}
+          {/* Load History */}
           <div style={{ textAlign: 'center', margin: '40px 0' }} data-reveal>
-            <button className="btn btn-outline">Load Full History</button>
+            <button
+              className="btn btn-outline"
+              onClick={() => setLoadState(s => s === 'idle' ? 'done' : s)}
+              disabled={loadState === 'done'}
+              style={{ opacity: loadState === 'done' ? 0.4 : 1 }}
+            >
+              {loadState === 'done' ? 'All History Loaded' : 'Load Full History'}
+            </button>
           </div>
 
           <div className="divider" style={{ margin: '0 0 60px' }} />
 
-          {/* ── Friendly Partners ──────────────────────────── */}
+          {/* Friendly Partners */}
           <div data-reveal>
             <span className="section-eyebrow">Network</span>
             <h2 className="section-title" style={{ fontSize: '1.8rem' }}>
               Friendly <span>Partners</span>
             </h2>
-            <p className="section-subtitle">
-              Fellow clubs and friendly rivals we compete with outside of official tournaments.
-            </p>
+            <p className="section-subtitle">Fellow clubs and friendly rivals we compete with outside official tournaments.</p>
           </div>
 
           <div className="partners-grid" data-reveal data-delay="100">
-            {PARTNERS.map(({ initials, name, last, bg }) => (
-              <div className="partner-card card" key={name}>
-                <div className="partner-badge" style={bg ? { background: bg } : {}}>
-                  {initials}
+            {loading ? (
+              [1,2,3,4].map(i => (
+                <div key={i} className="card" style={{ padding: '16px', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <Skeleton height="44px" width="44px" style={{ borderRadius: '50%' }} />
+                  <Skeleton height="16px" width="55%" />
                 </div>
-                <div>
-                  <strong>{name}</strong>
-                  <span>Last met: {last}</span>
+              ))
+            ) : partners.length > 0 ? (
+              partners.map(p => (
+                <div className="partner-card card" key={p.id}>
+                  <div
+                    className="partner-badge"
+                    style={p.badge_bg ? { background: p.badge_bg } : {}}
+                  >
+                    {p.initials}
+                  </div>
+                  <div>
+                    <strong>{p.name}</strong>
+                    <span>Last met: {new Date(p.last_met).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}</span>
+                  </div>
+                  <a href="#" className="btn btn-outline" style={{ padding: '6px 14px', fontSize: '0.65rem', marginLeft: 'auto' }}>
+                    View
+                  </a>
                 </div>
-                <a
-                  href="#"
-                  className="btn btn-outline"
-                  style={{ padding: '6px 14px', fontSize: '0.65rem', marginLeft: 'auto' }}
-                >
-                  View
-                </a>
+              ))
+            ) : (
+              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                No partners added yet.
               </div>
-            ))}
+            )}
           </div>
 
         </section>

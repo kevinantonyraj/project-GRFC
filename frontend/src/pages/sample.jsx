@@ -1,71 +1,35 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import "../assets/css/home.css";
-import Footer from '../components/Footer.jsx';
-import Navbar from '../components/Navbar.jsx';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Navbar  from '../components/Navbar.jsx';
+import Footer  from '../components/Footer.jsx';
+import { api } from '../../../backend/api/api.js';
+import '../assets/css/global.css';
+import '../assets/css/home.css';
 import useScrollReveal    from '../hooks/useScrollReveal';
 import useCounterAnimation from '../hooks/useCounterAnimation';
 import useProgressBar     from '../hooks/useProgressBar';
 import useTilt            from '../hooks/useTilt';
 import usePageLoader      from '../hooks/usePageLoader';
 
-
-/* ── Slideshow data ──────────────────────────────────────── */
+/* ── Static slideshow data ───────────────────────────────── */
 const SLIDES = [
-  { bg: 'linear-gradient(135deg,#0a0810 0%,#3A0F5E 40%,#5C1A8A 70%,#C9980A 100%)', img: 'https://www.mumbaiindians.com/static-assets/waf-images/83/60/4a/4-3/592-444/C3p3FQ8cRU.png' },
+  { bg: 'linear-gradient(135deg,#0a0810 0%,#3A0F5E 40%,#5C1A8A 70%,#C9980A 100%)', img: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1600&q=80' },
   { bg: 'linear-gradient(135deg,#0a0810,#1a0a2e,#5C1A8A)',                          img: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1600&q=80' },
   { bg: 'linear-gradient(135deg,#0a0810,#2a1a00,#8A6607)',                          img: 'https://images.unsplash.com/photo-1540747913346-19212a4b423d?w=1600&q=80' },
   { bg: 'linear-gradient(135deg,#0a0810,#3A0F5E,#1a3a1a)',                          img: 'https://images.unsplash.com/photo-1551958219-acbc595d9e2d?w=1600&q=80'  },
   { bg: 'linear-gradient(135deg,#0a0810,#5C1A8A,#C9980A)',                          img: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1600&q=80' },
 ];
 
-/* ── Gallery — each item has multiple images that rotate ─── */
 const GALLERY_ITEMS = [
-  {
-    cls: 'large', cap: 'Match Day Victory', delay: 0,
-    images: [
-      'https://cdn.britannica.com/72/273872-050-464E077C/Royal-Challengers-Bengaluru-Team-Celebrate-Victory-In-2025-IPL-Final-Match-Against-Punjab-Kings-In-Ahmedabad.jpg',
-      'https://www.mumbaiindians.com/static-assets/waf-images/83/60/4a/4-3/592-444/C3p3FQ8cRU.png',
-      
-    ],
-  },
-  {
-    cls: '', cap: 'Training Ground', delay: 80,
-    images: [
-      '/images/img1.jpg',
-      '../assets/images/img2.jpg',
-    ],
-  },
-  {
-    cls: '', cap: 'Team Spirit', delay: 160,
-    images: [
-      'https://images.unsplash.com/photo-1589487391730-58f20eb2c308?w=600&q=80',
-      'https://images.unsplash.com/photo-1540747913346-19212a4b423d?w=600&q=80',
-    ],
-  },
-  {
-    cls: '', cap: 'Trophy Lift', delay: 240,
-    images: [
-      'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&q=80',
-      'https://images.unsplash.com/photo-1551958219-acbc595d9e2d?w=600&q=80',
-    ],
-  },
-  {
-    cls: '', cap: 'Stadium Atmosphere', delay: 320,
-    images: [
-      'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=600&q=80',
-      'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&q=80',
-    ],
-  },
-  {
-    cls: '', cap: 'Goal Celebration', delay: 400,
-    images: [
-      'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&q=80',
-      'https://images.unsplash.com/photo-1589487391730-58f20eb2c308?w=600&q=80',
-    ],
-  },
+  { cls: 'large', img: 'https://images.unsplash.com/photo-1551958219-acbc595d9e2d?w=800&q=80',   cap: 'Match Day Victory',  delay: 0   },
+  { cls: '',      img: 'https://images.unsplash.com/photo-1484482340112-e1e2682b4856?w=600&q=80', cap: 'Training Ground',    delay: 80  },
+  { cls: '',      img: 'https://images.unsplash.com/photo-1589487391730-58f20eb2c308?w=600&q=80', cap: 'Team Spirit',        delay: 160 },
+  { cls: '',      img: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&q=80', cap: 'Trophy Lift 2023',   delay: 240 },
+  { cls: '',      img: 'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=600&q=80', cap: 'Stadium Atmosphere', delay: 320 },
+  { cls: '',      img: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&q=80', cap: 'Goal Celebration',   delay: 400 },
+  
 ];
 
-/* ── Skeleton ────────────────────────────────────────────── */
+/* ── Skeleton loader ─────────────────────────────────────── */
 const Skeleton = ({ width = '100%', height = '20px', style = {} }) => (
   <div style={{
     width, height, borderRadius: '6px',
@@ -76,79 +40,12 @@ const Skeleton = ({ width = '100%', height = '20px', style = {} }) => (
   }} />
 );
 
-/* ── Gallery Item ─────────────────────────────────────────── */
-/*
-  Each card independently cycles through its own images array.
-  Uses two layered divs — one fades out, one fades in — for a
-  smooth crossfade effect every 3 seconds.
-*/
-const GalleryItem = ({ item, onOpen }) => {
-  const [imgIndex,  setImgIndex]  = useState(0);
-  const [nextIndex, setNextIndex] = useState(1 % item.images.length);
-  const [fading,    setFading]    = useState(false);
-
-  useEffect(() => {
-    if (item.images.length <= 1) return;
-
-    const interval = setInterval(() => {
-      // Start crossfade
-      setFading(true);
-
-      // After fade completes, swap images and reset fade
-      setTimeout(() => {
-        setImgIndex(i  => (i + 1) % item.images.length);
-        setNextIndex(i => (i + 1) % item.images.length);
-        setFading(false);
-      }, 800);
-
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [item.images.length]);
-
-  return (
-    <div
-      className={`gallery-item${item.cls ? ' ' + item.cls : ''} tilt-card`}
-      data-reveal
-      data-delay={item.delay}
-      onClick={() => onOpen(item.images[imgIndex], item.cap)}
-      style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
-    >
-      {/* Current image — fades OUT */}
-      <div
-        className="gallery-img"
-        style={{
-          backgroundImage: `url('${item.images[imgIndex]}')`,
-          position: 'absolute', inset: 0,
-          transition: 'opacity 0.8s ease',
-          opacity: fading ? 0 : 1,
-        }}
-      />
-
-      {/* Next image — fades IN */}
-      <div
-        className="gallery-img"
-        style={{
-          backgroundImage: `url('${item.images[nextIndex]}')`,
-          position: 'absolute', inset: 0,
-          transition: 'opacity 0.8s ease',
-          opacity: fading ? 1 : 0,
-        }}
-      />
-
-      <div className="gallery-overlay" style={{ position: 'relative', zIndex: 2 }}>
-        <span>{item.cap}</span>
-      </div>
-    </div>
-  );
-};
-
-
 /* ═══════════════════════════════════════════════════════════
    HOME COMPONENT
 ═══════════════════════════════════════════════════════════ */
 export default function Home() {
   usePageLoader();
+  
   useScrollReveal();
   useCounterAnimation();
   useProgressBar();
@@ -187,10 +84,7 @@ export default function Home() {
     timerRef.current = setInterval(() => setCurrent(c => (c + 1) % SLIDES.length), 5000);
   }, []);
 
-  useEffect(() => {
-    startAuto();
-    return () => clearInterval(timerRef.current);
-  }, [startAuto]);
+  useEffect(() => { startAuto(); return () => clearInterval(timerRef.current); }, [startAuto]);
 
   const navigate = dir => {
     clearInterval(timerRef.current);
@@ -227,11 +121,11 @@ export default function Home() {
     class Particle {
       constructor() { this.reset(); }
       reset() {
-        this.x  = Math.random() * W; this.y  = H + 10;
+        this.x = Math.random() * W; this.y = H + 10;
         this.vy = -(Math.random() * 0.8 + 0.3); this.vx = (Math.random() - 0.5) * 0.4;
-        this.r  = Math.random() * 2.5 + 0.5;
-        this.c  = colors[Math.floor(Math.random() * colors.length)];
-        this.a  = Math.random() * 0.6 + 0.2;
+        this.r = Math.random() * 2.5 + 0.5;
+        this.c = colors[Math.floor(Math.random() * colors.length)];
+        this.a = Math.random() * 0.6 + 0.2;
       }
       update() { this.x += this.vx; this.y += this.vy; this.a -= 0.0012; if (this.y < -10 || this.a <= 0) this.reset(); }
       draw()   { ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2); ctx.fillStyle = this.c + this.a + ')'; ctx.fill(); }
@@ -288,7 +182,6 @@ export default function Home() {
         {/* ══ HERO ══════════════════════════════════════════ */}
         <section className="hero-section">
           <canvas ref={canvasRef} style={{ position:'absolute', inset:0, pointerEvents:'none', zIndex:1, opacity:0.35 }} />
-
           <div className="hero-slideshow" id="heroSlideshow"
             onTouchStart={e => { touchStartX.current = e.touches[0].clientX; }}
             onTouchEnd={e => { const dx = e.changedTouches[0].clientX - touchStartX.current; if (Math.abs(dx) > 50) navigate(dx < 0 ? 1 : -1); }}
@@ -300,9 +193,7 @@ export default function Home() {
               </div>
             ))}
             <div className="slide-dots">
-              {SLIDES.map((_, i) => (
-                <button key={i} className={`dot${i === current ? ' active' : ''}`} onClick={() => navigate(i - current)} />
-              ))}
+              {SLIDES.map((_, i) => <button key={i} className={`dot${i === current ? ' active' : ''}`} onClick={() => navigate(i - current)} />)}
             </div>
             <button className="slide-arrow prev" onClick={() => navigate(-1)}>‹</button>
             <button className="slide-arrow next" onClick={() => navigate(1)}>›</button>
@@ -364,12 +255,12 @@ export default function Home() {
           )}
 
           <div className="match-center-grid">
+
+            {/* Last match */}
             <div className="match-result-card card tilt-card" data-reveal data-delay="100">
               {loading ? (
                 <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <Skeleton height="14px" width="50%" />
-                  <Skeleton height="60px" />
-                  <Skeleton height="14px" width="70%" />
+                  <Skeleton height="14px" width="50%" /><Skeleton height="60px" /><Skeleton height="14px" width="70%" />
                 </div>
               ) : lastMatch ? (
                 <>
@@ -398,17 +289,14 @@ export default function Home() {
                       <div className="goals-header">Goalscorers</div>
                       {lastMatch.goals?.filter(g => !g.is_own_goal).map((g, i) => (
                         <div className="goal-item" key={i}>
-                          <span>{g.player_name}</span>
-                          <span className="goal-min">{g.minute}'</span>
+                          <span>{g.player_name}</span><span className="goal-min">{g.minute}'</span>
                         </div>
                       ))}
                     </div>
                     {lastMatch.appearances?.find(a => a.is_motm) && (
                       <div className="motm-card">
                         <span className="motm-label">⭐ MAN OF THE MATCH</span>
-                        <strong className="motm-name">
-                          {lastMatch.appearances.find(a => a.is_motm)?.player_name}
-                        </strong>
+                        <strong className="motm-name">{lastMatch.appearances.find(a => a.is_motm)?.player_name}</strong>
                       </div>
                     )}
                   </div>
@@ -420,6 +308,7 @@ export default function Home() {
               )}
             </div>
 
+            {/* Top scorers */}
             <div className="top-scorers-card card" data-reveal data-delay="200">
               <div className="card-header">
                 <span>🏆 Top Scorers</span>
@@ -455,6 +344,7 @@ export default function Home() {
                 View Full Squad →
               </a>
             </div>
+
           </div>
         </section>
 
@@ -469,17 +359,16 @@ export default function Home() {
               <p className="section-subtitle">Capturing the passion, the pride, and the golden moments</p>
             </div>
           </div>
-
           <div className="gallery-grid">
-            {GALLERY_ITEMS.map(item => (
-              <GalleryItem key={item.cap} item={item} onOpen={openLightbox} />
+            {GALLERY_ITEMS.map(({ cls, img, cap, delay }) => (
+              <div key={cap} className={`gallery-item${cls ? ' ' + cls : ''} tilt-card`}
+                data-reveal data-delay={delay} onClick={() => openLightbox(img, cap)} style={{ cursor: 'pointer' }}>
+                <div className="gallery-img" style={{ backgroundImage: `url('${img}')` }} />
+                <div className="gallery-overlay"><span>{cap}</span></div>
+              </div>
             ))}
           </div>
-
-          <div
-            className={`lightbox${lightbox.open ? ' open' : ''}`}
-            onClick={e => e.target === e.currentTarget && closeLightbox()}
-          >
+          <div className={`lightbox${lightbox.open ? ' open' : ''}`} onClick={e => e.target === e.currentTarget && closeLightbox()}>
             <button className="lightbox-close" onClick={closeLightbox}>✕</button>
             <img src={lightbox.src} alt={lightbox.caption} />
             <div className="lightbox-caption">{lightbox.caption}</div>
@@ -504,9 +393,7 @@ export default function Home() {
                     : <><span data-count={count}>0</span>{suffix}</>
                   }
                 </div>
-                <div className="progress-bar">
-                  <div className="progress-fill" data-width={width} />
-                </div>
+                <div className="progress-bar"><div className="progress-fill" data-width={width} /></div>
               </div>
             ))}
           </div>

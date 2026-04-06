@@ -18,7 +18,7 @@ function App() {
         <Route path="/daily" element={<Daily />} />
         <Route path="/matches" element={<Matches />} />
         <Route path="/players" element={<Players />} />
-        <Route path="/player-profile" element={<PlayerProfile />} />
+        <Route path="/player-profile/:id" element={<PlayerProfile />} />
         <Route path="/tournaments" element={<Tournaments />} />
         <Route path="/club" element={<Club />} />
         <Route path="/admin" element={<Admin />} />

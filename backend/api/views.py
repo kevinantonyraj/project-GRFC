@@ -113,8 +113,11 @@ def matches_list(request):
 @api_view(['GET'])
 def players_list(request):
 
-    players = Player.objects.filter(
-        is_active=True
+    
+    players = Player.objects.filter(is_active=True).annotate(
+        total_appearances = Count('appearances', distinct=True),
+        total_goals       = Count('goals', filter=Q(goals__is_own_goal=False), distinct=True),
+        total_assists     = Sum('appearances__assists'),
     ).select_related('current_team').order_by('number')
 
     return Response(PlayerSerializer(players, many=True).data)
