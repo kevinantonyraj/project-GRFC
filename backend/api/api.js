@@ -1,13 +1,19 @@
-const BASE_URL = 'http://127.0.0.1:8000/api';
+const BASE = 'http://127.0.0.1:8000/api';
+
+const get = (url) => fetch(url).then(r => {
+  if (!r.ok) throw new Error(`API error ${r.status}`);
+  return r.json();
+});
 
 export const api = {
-  home:        ()       => fetch(`${BASE_URL}/home/`).then(r => r.json()),
-  daily:       (date)   => fetch(`${BASE_URL}/daily/${date ? date + '/' : ''}`).then(r => r.json()),
-  matches:     (filter) => fetch(`${BASE_URL}/matches/${filter && filter !== 'all' ? '?result=' + filter : ''}`).then(r => r.json()),
-  players:     ()       => fetch(`${BASE_URL}/players/`).then(r => r.json()),
-  playerById:  (id)     => fetch(`${BASE_URL}/players/${id}/`).then(r => r.json()),
-  honours:     ()       => fetch(`${BASE_URL}/honours/`).then(r => r.json()),
-  snapshot:    ()       => fetch(`${BASE_URL}/snapshot/`).then(r => r.json()),
-  tournaments: (filter) => fetch(`${BASE_URL}/tournaments/${filter && filter !== 'all' ? '?result=' + filter : ''}`).then(r => r.json()),
-  club:        ()       => fetch(`${BASE_URL}/club/`).then(r => r.json()),
+  home:             ()           => get(`${BASE}/home/`),
+  daily:            (date)       => get(`${BASE}/daily/${date ? date + '/' : ''}`),
+  matches:          (result)     => get(`${BASE}/matches/${result && result !== 'all' ? '?result=' + result : ''}`),
+  players:          (search)     => get(`${BASE}/players/${search ? '?search=' + encodeURIComponent(search) : ''}`),
+  playerById:       (id)         => get(`${BASE}/players/${id}/`),
+  honours:          ()           => get(`${BASE}/honours/`),
+  snapshot:         ()           => get(`${BASE}/snapshot/`),
+  tournaments:      (result)     => get(`${BASE}/tournaments/${result && result !== 'all' ? '?result=' + result : ''}`),
+  tournamentDetail: (id)         => get(`${BASE}/tournaments/${id}/`),
+  club:             ()           => get(`${BASE}/club/`),
 };
