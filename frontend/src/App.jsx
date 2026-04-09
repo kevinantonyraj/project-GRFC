@@ -9,6 +9,9 @@ import Tournaments from "./pages/tournament";
 import TournamentDetail from './pages/tournamentdetail';
 import Club from "./pages/club";
 import Admin from "./pages/admin";
+import AdminPortal from './pages/adminportal';
+
+
 
 
 function App() {
@@ -24,6 +27,7 @@ function App() {
         <Route path="/tournament/:id"      element={<TournamentDetail />} />
         <Route path="/club" element={<Club />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/admin-portal" element={<AdminPortal />} />
       </Routes>
     </BrowserRouter>
   );

@@ -8,7 +8,7 @@ from django.db import models
 # ═══════════════════════════════════════════════════════════
 class Team(models.Model):
     name           = models.CharField(max_length=100)
-    short_code     = models.CharField(max_length=3)        # GR, RS, IW
+    short_code     = models.CharField(max_length=5)        # GR, RS, IW
     badge_bg       = models.CharField(max_length=200, blank=True)
     is_golden_rock = models.BooleanField(default=False)    # True = internal squad
 
@@ -264,9 +264,28 @@ class Staff(models.Model):
 # ═══════════════════════════════════════════════════════════
 class Partner(models.Model):
     name      = models.CharField(max_length=100)
-    initials  = models.CharField(max_length=3)
+    initials  = models.CharField(max_length=5)
     last_met  = models.DateField()
     badge_bg  = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return self.name
+    
+
+
+class ClubAsset(models.Model):
+    """
+    Dynamic club assets shown on the Club page.
+    Replaces the hardcoded ASSETS list in Club.jsx.
+    """
+    icon  = models.CharField(max_length=10)   # emoji e.g. ⚽
+    count = models.IntegerField(default=0)
+    label = models.CharField(max_length=100)  # e.g. Match Balls
+    order = models.IntegerField(default=0)    # display order
+ 
+    class Meta:
+        ordering = ['order', 'id']
+ 
+    def __str__(self):
+        return f"{self.icon} {self.label} ({self.count})"
+ 

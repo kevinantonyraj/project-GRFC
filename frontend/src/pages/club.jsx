@@ -20,12 +20,8 @@ const IDENTITY = [
   { icon:'⭐', label:'Motto',       value:'"Fortis in Victoria, Unitas in Corde"', sub:'(Strength in Victory, Unity in Heart)' },
 ];
 
-const ASSETS = [
-  { icon:'⚽', count:18,  label:'Match Balls'    },
-  { icon:'🥅', count:4,   label:'Training Nets'  },
-  { icon:'🔶', count:120, label:'Cones & Markers' },
-  { icon:'🩺', count:3,   label:'First Aid Kits' },
-];
+// Assets are now dynamic — fetched from Django API
+// No more hardcoded list here
 
 const Skeleton = ({ width='100%', height='20px', style={} }) => (
   <div style={{ width, height, borderRadius:'6px', background:'linear-gradient(90deg,var(--bg-card) 25%,rgba(255,255,255,0.05) 50%,var(--bg-card) 75%)', backgroundSize:'200% 100%', animation:'shimmer 1.5s infinite', ...style }}/>
@@ -167,12 +163,12 @@ export default function Club() {
   usePageLoader(); useRepeatReveal(); useCounterAnimation(); useTilt();
 
   const [staff,          setStaff]          = useState([]);
+  const [assets,         setAssets]         = useState([]);   // dynamic from DB
   const [loading,        setLoading]        = useState(true);
   const [error,          setError]          = useState(null);
   const [modalMember,    setModalMember]    = useState(null);
   const [showAllMembers, setShowAllMembers] = useState(false);
 
-  // How many rows shown in main table
   const TABLE_LIMIT = 5;
   const [tableCount, setTableCount] = useState(TABLE_LIMIT);
   const visibleStaff = staff.slice(0, tableCount);
@@ -182,7 +178,9 @@ export default function Club() {
       try {
         setLoading(true);
         const data = await api.club();
-        setStaff(data.staff || []);
+        // API now returns staff, partners AND assets
+        setStaff(data.staff   || []);
+        setAssets(data.assets || []);
       } catch { setError('Failed to load club data.'); }
       finally { setLoading(false); }
     };
@@ -259,13 +257,19 @@ export default function Club() {
             <h2 className="section-title" style={{fontSize:'1.8rem'}}>Club Assets <span>&amp; Logistics</span></h2>
           </div>
           <div className="assets-grid" data-reveal data-delay="80">
-            {ASSETS.map(({ icon, count, label }) => (
-              <div className="asset-card stat-card tilt-card" key={label}>
-                <span className="stat-icon">{icon}</span>
-                <span className="stat-number" data-count={count}>0</span>
-                <span className="stat-label">{label}</span>
+            {assets.length > 0 ? (
+              assets.map(({ id, icon, count, label }) => (
+                <div className="asset-card stat-card tilt-card" key={id}>
+                  <span className="stat-icon">{icon}</span>
+                  <span className="stat-number" data-count={count}>0</span>
+                  <span className="stat-label">{label}</span>
+                </div>
+              ))
+            ) : !loading && (
+              <div style={{ color:'var(--text-muted)', fontFamily:'var(--font-mono)', fontSize:'0.8rem', padding:'20px 0' }}>
+                No assets recorded yet.
               </div>
-            ))}
+            )}
           </div>
 
           <div className="divider" style={{margin:'40px 0'}}/>

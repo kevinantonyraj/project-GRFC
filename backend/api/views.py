@@ -6,27 +6,33 @@ from django.shortcuts          import get_object_or_404
 
 from .models import (
     Team, Player, Match, Goal, MatchAppearance,
-    DailyEntry, Tournament, TournamentTeam, TournamentSquad, Staff, Partner
+    DailyEntry, Tournament, TournamentTeam, TournamentSquad,
+    Staff, Partner, ClubAsset
 )
 from .serializers import (
     TeamSerializer, PlayerSerializer, PlayerStatsSerializer,
     MatchSerializer, DailyEntrySerializer,
-    TournamentSerializer, StaffSerializer, PartnerSerializer
+    TournamentSerializer, StaffSerializer, PartnerSerializer,
+    ClubAssetSerializer
 )
 
 
 # ═══════════════════════════════════════════════════════════
 #  HOME PAGE
+#  — last_match: the most recently inserted match (any type)
+#  — season_stats: live from DB (players, matches, goals)
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def home_data(request):
+    # Latest match regardless of type
     last_match = Match.objects.select_related(
         'home_team', 'away_team'
     ).prefetch_related(
-        'goals', 'goals__player',
+        'goals', 'goals__player', 'goals__team',
         'appearances', 'appearances__player', 'appearances__team'
     ).order_by('-date').first()
 
+    # Live stats from DB
     total_goals   = Goal.objects.filter(is_own_goal=False).count()
     total_matches = Match.objects.count()
     total_players = Player.objects.filter(is_active=True).count()
@@ -50,11 +56,11 @@ def home_data(request):
 
 # ═══════════════════════════════════════════════════════════
 #  DAILY PAGE
-#  Supports ?date=2023-11-04 query param
+#  Shows internal matches only (match_type='internal')
+#  Dates ribbon pulls from DailyEntry records
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def daily_data(request, date=None):
-    # Support both URL param and query param
     date = date or request.query_params.get('date', None)
 
     if date:
@@ -62,9 +68,14 @@ def daily_data(request, date=None):
     else:
         entry = DailyEntry.objects.order_by('-date').first()
         if not entry:
-            return Response({'detail': 'No daily entries found.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {'detail': 'No daily entries found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-    all_dates = list(DailyEntry.objects.order_by('-date').values_list('date', flat=True))
+    all_dates = list(
+        DailyEntry.objects.order_by('-date').values_list('date', flat=True)
+    )
 
     return Response({
         'entry':     DailyEntrySerializer(entry).data,
@@ -74,13 +85,17 @@ def daily_data(request, date=None):
 
 # ═══════════════════════════════════════════════════════════
 #  MATCHES PAGE
-#  Supports ?result=win|draw|loss|all filter
+#  Excludes internal matches (those go to Daily page)
+#  Supports ?result=win|draw|loss filter
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def matches_list(request):
     result_filter = request.query_params.get('result', None)
 
-    matches = Match.objects.select_related(
+    # Exclude internal matches — they appear on the Daily page
+    matches = Match.objects.exclude(
+        match_type='internal'
+    ).select_related(
         'home_team', 'away_team'
     ).prefetch_related(
         'goals', 'goals__player', 'goals__team',
@@ -94,9 +109,7 @@ def matches_list(request):
 
 
 # ═══════════════════════════════════════════════════════════
-#  PLAYERS LIST
-#  Includes annotated goal/assist/appearance counts
-#  Supports ?search=name query param
+#  PLAYERS LIST — with search + annotated stats
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def players_list(request):
@@ -125,21 +138,23 @@ def players_list(request):
 def player_profile(request, pk):
     player = get_object_or_404(Player, pk=pk)
 
-    appearances = MatchAppearance.objects.filter(player=player).select_related(
+    appearances = MatchAppearance.objects.filter(
+        player=player
+    ).select_related(
         'match', 'match__home_team', 'match__away_team', 'team'
     ).order_by('-match__date')[:15]
 
     match_history = []
     for app in appearances:
-        match = app.match
-        goals_in_match   = Goal.objects.filter(match=match, player=player, is_own_goal=False).count()
+        match    = app.match
+        goals_in = Goal.objects.filter(match=match, player=player, is_own_goal=False).count()
         opponent = match.away_team.name if match.home_team.is_golden_rock else match.home_team.name
         match_history.append({
             'date':     match.date.strftime('%b %d, %Y'),
             'opponent': opponent,
             'result':   match.result,
             'score':    f"{match.home_score} - {match.away_score}",
-            'goals':    goals_in_match,
+            'goals':    goals_in,
             'assists':  app.assists,
             'rating':   str(app.rating) if app.rating else '—',
             'is_motm':  app.is_motm,
@@ -163,8 +178,7 @@ def player_profile(request, pk):
 
 
 # ═══════════════════════════════════════════════════════════
-#  HONOURS BOARD — top scorers, assists, motm
-#  Returns ALL players ranked (for full ranking view)
+#  HONOURS BOARD
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def honours_board(request):
@@ -220,7 +234,6 @@ def season_snapshot(request):
 
 # ═══════════════════════════════════════════════════════════
 #  TOURNAMENTS LIST
-#  Supports ?result=champions|runners|semis filter
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def tournaments_list(request):
@@ -238,14 +251,12 @@ def tournaments_list(request):
 
 
 # ═══════════════════════════════════════════════════════════
-#  TOURNAMENT DETAIL
-#  Returns full tournament info with all matches played
+#  TOURNAMENT DETAIL — full match timeline
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def tournament_detail(request, pk):
     tournament = get_object_or_404(Tournament, pk=pk)
 
-    # Get all matches for this tournament
     tournament_matches = Match.objects.filter(
         match_type='tournament',
         competition=tournament.name
@@ -256,7 +267,6 @@ def tournament_detail(request, pk):
         'appearances', 'appearances__player'
     ).order_by('date')
 
-    # Build stage progression
     stages = []
     for match in tournament_matches:
         stages.append({
@@ -276,8 +286,7 @@ def tournament_detail(request, pk):
                 for g in match.goals.filter(is_own_goal=False)
             ],
             'motm': next(
-                (a.player.name for a in match.appearances.all() if a.is_motm),
-                None
+                (a.player.name for a in match.appearances.all() if a.is_motm), None
             ),
         })
 
@@ -288,13 +297,15 @@ def tournament_detail(request, pk):
 
 
 # ═══════════════════════════════════════════════════════════
-#  CLUB PAGE — staff + partners
+#  CLUB PAGE — staff + partners + assets (dynamic)
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def club_data(request):
     staff    = Staff.objects.all()
     partners = Partner.objects.all().order_by('-last_met')
+    assets   = ClubAsset.objects.all()
     return Response({
-        'staff':    StaffSerializer(staff,    many=True).data,
+        'staff':    StaffSerializer(staff, many=True).data,
         'partners': PartnerSerializer(partners, many=True).data,
+        'assets':   ClubAssetSerializer(assets, many=True).data,
     })
