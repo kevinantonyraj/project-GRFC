@@ -14,7 +14,7 @@ const Skeleton = ({ width='100%', height='20px', style={} }) => (
   <div style={{ width, height, borderRadius:'6px', background:'linear-gradient(90deg,var(--bg-card) 25%,rgba(255,255,255,0.05) 50%,var(--bg-card) 75%)', backgroundSize:'200% 100%', animation:'shimmer 1.5s infinite', ...style }}/>
 );
 
-const useRepeatReveal = () => {
+const useRepeatReveal = (deps = []) => {
   useEffect(() => {
     const els = document.querySelectorAll('[data-reveal]');
     const obs = new IntersectionObserver(entries => {
@@ -25,7 +25,7 @@ const useRepeatReveal = () => {
     }, { threshold:0.12, rootMargin:'0px 0px -40px 0px' });
     els.forEach(el => obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, deps);
 };
 
 /* ── Stage label based on match index and total ─────────── */
@@ -40,13 +40,13 @@ const getStageLabel = (idx, total) => {
 
 export default function TournamentDetail() {
   const { id } = useParams();
-  usePageLoader(); useRepeatReveal(); useTilt();
+  usePageLoader();  useTilt();
 
   const [data,    setData]    = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
   const [openMatchId, setOpenMatchId] = useState(null);
-
+  useRepeatReveal([data]);
   useEffect(() => {
     const fetch = async () => {
       try {
@@ -198,9 +198,15 @@ export default function TournamentDetail() {
                         data-delay={idx * 80}
                         style={{ overflow:'hidden', borderLeft:`3px solid ${isGRWin ? 'var(--gold)' : 'var(--border)'}` }}
                       >
-                        {/* Stage label */}
-                        <div style={{ padding:'8px 20px', background:'rgba(255,255,255,0.03)', borderBottom:'1px solid var(--border)', fontFamily:'var(--font-mono)', fontSize:'0.62rem', color:'var(--gold)', letterSpacing:'0.15em' }}>
-                          {stage}
+                        {/* Stage label + type badge */}
+                        <div style={{ padding:'8px 20px', background:'rgba(255,255,255,0.03)', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                          <span style={{ fontFamily:'var(--font-mono)', fontSize:'0.62rem', color:'var(--gold)', letterSpacing:'0.15em' }}>
+                            {stage}
+                          </span>
+                          <span className="badge badge-loss" style={{ fontSize:'0.6rem' }}>🏆 Tournament</span>
+                          <span style={{ fontFamily:'var(--font-mono)', fontSize:'0.6rem', color:'var(--text-muted)', letterSpacing:'0.08em' }}>
+                            🏆 {match.tournament_name || tournament?.name}
+                          </span>
                         </div>
 
                         {/* Main row */}

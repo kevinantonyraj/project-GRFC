@@ -58,10 +58,13 @@ def admin_bootstrap(request):
     matches = Match.objects.select_related('home_team', 'away_team').order_by('-date').values(
         'id', 'date', 'competition', 'home_team__name', 'away_team__name', 'result'
     )[:50]
+    tournaments = Tournament.objects.values('id', 'name', 'year').order_by('-year')  # ← ADD
+
     return ok({
         'teams':   list(teams),
         'players': list(players),
         'matches': list(matches),
+        'tournaments': list(tournaments),
     })
 
 
@@ -152,6 +155,12 @@ def match_list_create(request):
             return err('Away team is required')
         if str(data.get('home_team')) == str(data.get('away_team')):
             return err('Home and away teams must be different')
+        
+        match_type = data.get('match_type', 'external')
+
+        tournament_id = None
+        if match_type == 'tournament' and data.get('tournament_id'):
+            tournament_id = int(data['tournament_id'])
 
         match = Match.objects.create(
             date         = parsed_date,          # ← proper datetime object
@@ -164,7 +173,15 @@ def match_list_create(request):
             result       = data.get('result', 'win'),
             match_type   = data.get('match_type', 'external'),
             notes        = data.get('notes', ''),
+            tournament_id = tournament_id,
         )
+        if match_type == 'internal':
+            DailyEntry.objects.create(
+                match       = match,
+                date        = parsed_date.date(),   # DateField — just the date part
+                competition = data['competition'],
+                notes       = data.get('notes', ''),
+            )
         return ok(
             {'id': match.id, 'display': str(match)},
             f'Match recorded: {match.home_team.name} vs {match.away_team.name}',

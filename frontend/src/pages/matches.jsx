@@ -26,7 +26,7 @@ const Skeleton = ({ width='100%', height='20px', style={} }) => (
   <div style={{ width, height, borderRadius:'6px', background:'linear-gradient(90deg,var(--bg-card) 25%,rgba(255,255,255,0.05) 50%,var(--bg-card) 75%)', backgroundSize:'200% 100%', animation:'shimmer 1.5s infinite', ...style }}/>
 );
 
-const useRepeatReveal = () => {
+const useRepeatReveal = (deps = []) => {
   useEffect(() => {
     const els = document.querySelectorAll('[data-reveal]');
     const obs = new IntersectionObserver(entries => {
@@ -37,7 +37,7 @@ const useRepeatReveal = () => {
     }, { threshold:0.12, rootMargin:'0px 0px -40px 0px' });
     els.forEach(el => obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, deps);
 };
 
 /* ── Single Match Row ────────────────────────────────────── */
@@ -88,6 +88,11 @@ const MatchRow = ({ match, index }) => {
           {new Date(match.date).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' })}
         </span>
         <span>📍 {match.venue}</span>
+        {match.match_type === 'internal'   && <span className="badge badge-violet">⚡ Internal</span>}
+        {match.match_type === 'external'   && <span className="badge badge-gold">🏟 External</span>}
+        {match.match_type === 'friendly'   && <span className="badge badge-win">🤝 Friendly</span>}
+        {match.match_type === 'tournament' && <span className="badge badge-loss">🏆 Tournament</span>}
+
         <button className="match-expand-btn" onClick={() => setOpen(o => !o)}>
           {open ? 'HIDE DETAILS ▴' : 'VIEW SQUAD & SCORERS ▾'}
         </button>
@@ -148,14 +153,14 @@ const MatchRow = ({ match, index }) => {
    MATCHES COMPONENT
 ═══════════════════════════════════════════════════════════ */
 export default function Matches() {
-  usePageLoader(); useRepeatReveal(); useTilt();
+  usePageLoader();  useTilt();
 
   const [matches,      setMatches]      = useState([]);
   const [loading,      setLoading]      = useState(true);
   const [error,        setError]        = useState(null);
   const [activeFilter, setActiveFilter] = useState('all');
   const [loadState,    setLoadState]    = useState('idle');
-
+  useRepeatReveal([matches]);
   useEffect(() => {
     const fetch = async () => {
       try {

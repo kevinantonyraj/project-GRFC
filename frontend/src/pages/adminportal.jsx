@@ -233,11 +233,12 @@ const MatchesSection = ({ toast, bootstrap }) => {
   const [confirm,  setConfirm]  = useState(null);
   const [saving,   setSaving]   = useState(false);
 
-  const blank = { date:'', competition:'', venue:'', home_team:'', away_team:'', home_score:0, away_score:0, result:'win', match_type:'external', notes:'' };
+  const blank = { date:'', competition:'', venue:'', home_team:'', away_team:'', home_score:0, away_score:0, result:'win', match_type:'external', notes:'', tournament_id:'' };
   const [form, setForm] = useState(blank);
 
   const teams   = bootstrap?.teams   || [];
   const players = bootstrap?.players || [];
+  const tournaments = bootstrap?.tournaments || []; 
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -264,6 +265,9 @@ const MatchesSection = ({ toast, bootstrap }) => {
     if (!form.home_team)    return toast('Home team is required', 'err');
     if (!form.away_team)    return toast('Away team is required', 'err');
     if (form.home_team === form.away_team) return toast('Home and away teams must be different', 'err');
+
+    if (form.match_type === 'tournament' && !form.tournament_id)
+      return toast('Please select a tournament', 'err');
 
     setSaving(true);
     const r = await adminApi.createMatch(form);
@@ -326,6 +330,31 @@ const MatchesSection = ({ toast, bootstrap }) => {
               </div>
             ))}
           </div>
+
+          {/* ✅ ADD THIS HERE */}
+          {form.match_type === 'tournament' && (
+            <div style={{ marginBottom:'18px', padding:'16px', background:'rgba(201,152,10,0.06)', border:`1px solid rgba(201,152,10,0.3)`, borderRadius:'10px' }}>
+              <label style={S.label}>🏆 Link to Tournament *</label>
+              <select
+                style={S.select}
+                value={form.tournament_id}
+                onChange={e => setForm(f => ({ ...f, tournament_id: e.target.value }))}
+              >
+                <option value="">— Select tournament —</option>
+                {tournaments.map(t => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} ({t.year})
+                  </option>
+                ))}
+              </select>
+
+              {tournaments.length === 0 && (
+                <div style={{ marginTop:'8px', fontSize:'0.78rem', color:'#f87171' }}>
+                  No tournaments found. Create a tournament first.
+                </div>
+              )}
+            </div>
+          )}
 
           <div style={{ ...S.row, gridTemplateColumns:'1fr 1fr 1fr' }}>
             <FG label="Date & Time *">

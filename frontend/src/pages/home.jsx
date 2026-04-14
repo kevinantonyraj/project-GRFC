@@ -377,6 +377,12 @@ export default function Home() {
                     <span>📅 {new Date(lastMatch.date).toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'short', year:'numeric' })}</span>
                     <span>📍 {lastMatch.venue}</span>
                     <span className={`badge badge-${lastMatch.result}`}>{lastMatch.result.toUpperCase()}</span>
+
+                    {lastMatch.match_type === 'internal'   && <span className="badge badge-violet">⚡ Internal</span>}
+                    {lastMatch.match_type === 'external'   && <span className="badge badge-gold">🏟 External</span>}
+                    {lastMatch.match_type === 'friendly'   && <span className="badge badge-win">🤝 Friendly</span>}
+                    {lastMatch.match_type === 'tournament' && <span className="badge badge-loss">🏆 Tournament</span>}
+
                   </div>
                   <div className="match-score-row">
                     <div className="team home-team">

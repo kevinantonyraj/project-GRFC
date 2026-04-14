@@ -35,7 +35,7 @@ const Skeleton = ({ width='100%', height='20px', style={} }) => (
 );
 
 /* ── Repeating scroll reveal ─────────────────────────────── */
-const useRepeatReveal = () => {
+const useRepeatReveal = (deps = []) => {
   useEffect(() => {
     const els = document.querySelectorAll('[data-reveal]');
     const obs = new IntersectionObserver(entries => {
@@ -46,7 +46,7 @@ const useRepeatReveal = () => {
     }, { threshold:0.12, rootMargin:'0px 0px -40px 0px' });
     els.forEach(el => obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, deps);
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -349,7 +349,7 @@ const CalendarButton = ({ activeDate, allDates, onSelect }) => {
    DAILY COMPONENT
 ═══════════════════════════════════════════════════════════ */
 export default function Daily() {
-  usePageLoader(); useRepeatReveal(); useCounterAnimation(); useTilt();
+  usePageLoader(); ; useCounterAnimation(); useTilt();
 
   const [entry,      setEntry]      = useState(null);
   const [allDates,   setAllDates]   = useState([]);
@@ -357,23 +357,31 @@ export default function Daily() {
   const [loading,    setLoading]    = useState(true);
   const [error,      setError]      = useState(null);
 
+  useRepeatReveal([entry]);
+
   const scrollRef     = useRef(null);
   const activePillRef = useRef(null);
 
   const fetchEntry = useCallback(async (date=null) => {
-    try {
-      setLoading(true); setError(null);
-      const data = await api.daily(date);
-      setEntry(data.entry);
-      if (data.all_dates?.length) {
-        setAllDates(data.all_dates);
-        setActiveDate(data.entry?.date || data.all_dates[0]);
-      }
-    } catch {
+  try {
+    setLoading(true); setError(null);
+    const data = await api.daily(date);
+    setEntry(data.entry);
+    if (data.all_dates?.length) {
+      setAllDates(data.all_dates);
+      setActiveDate(data.entry?.date || data.all_dates[0]);
+    }
+  } catch (e) {
+    // Only show error if there's genuinely no data at all
+    // If we already have allDates loaded, just clear the entry
+    if (allDates.length === 0) {
+      setError('No daily entries found. Add matches via the admin portal.');
+    } else {
       setError('No match found for this date.');
-      setEntry(null);
-    } finally { setLoading(false); }
-  }, []);
+    }
+    setEntry(null);
+  } finally { setLoading(false); }
+    }, [allDates.length]);
 
   useEffect(() => { fetchEntry(); }, [fetchEntry]);
 

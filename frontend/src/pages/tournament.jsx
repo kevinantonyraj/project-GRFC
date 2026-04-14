@@ -30,7 +30,7 @@ const Skeleton = ({ width='100%', height='20px', style={} }) => (
   <div style={{ width, height, borderRadius:'6px', background:'linear-gradient(90deg,var(--bg-card) 25%,rgba(255,255,255,0.05) 50%,var(--bg-card) 75%)', backgroundSize:'200% 100%', animation:'shimmer 1.5s infinite', ...style }}/>
 );
 
-const useRepeatReveal = () => {
+const useRepeatReveal = (deps = []) => {
   useEffect(() => {
     const els = document.querySelectorAll('[data-reveal]');
     const obs = new IntersectionObserver(entries => {
@@ -41,11 +41,11 @@ const useRepeatReveal = () => {
     }, { threshold:0.12, rootMargin:'0px 0px -40px 0px' });
     els.forEach(el => obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, deps);
 };
 
 export default function Tournaments() {
-  usePageLoader(); useRepeatReveal(); useCounterAnimation(); useTilt();
+  usePageLoader();  useCounterAnimation(); useTilt();
 
   const [tournaments,  setTournaments]  = useState([]);
   const [partners,     setPartners]     = useState([]);
@@ -53,6 +53,8 @@ export default function Tournaments() {
   const [loading,      setLoading]      = useState(true);
   const [error,        setError]        = useState(null);
   const [activeFilter, setActiveFilter] = useState('all');
+
+  useRepeatReveal([tournaments]);
 
   useEffect(() => {
     const fetchAll = async () => {

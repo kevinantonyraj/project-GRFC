@@ -98,6 +98,14 @@ class Match(models.Model):
     match_type  = models.CharField(max_length=12, choices=MATCH_TYPE_CHOICES, default='external')
     notes       = models.TextField(blank=True, null=True)
 
+    tournament  = models.ForeignKey(
+        'Tournament',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='matches'
+    )
+    
     def __str__(self):
         return f"{self.home_team.name} vs {self.away_team.name} — {self.date.date()}"
 

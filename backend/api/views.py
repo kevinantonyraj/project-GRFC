@@ -258,8 +258,8 @@ def tournament_detail(request, pk):
     tournament = get_object_or_404(Tournament, pk=pk)
 
     tournament_matches = Match.objects.filter(
-        match_type='tournament',
-        competition=tournament.name
+        
+        tournament=tournament
     ).select_related(
         'home_team', 'away_team'
     ).prefetch_related(
@@ -273,6 +273,7 @@ def tournament_detail(request, pk):
             'id':             match.id,
             'date':           match.date.strftime('%b %d, %Y'),
             'competition':    match.competition,
+            'tournament_name': tournament.name, 
             'home_team_name': match.home_team.name,
             'home_team_code': match.home_team.short_code,
             'away_team_name': match.away_team.name,

@@ -29,7 +29,7 @@ const useFloatCounter = () => {
   }, []);
 };
 
-const useRepeatReveal = () => {
+const useRepeatReveal = (deps = []) => {
   useEffect(() => {
     const els = document.querySelectorAll('[data-reveal]');
     const obs = new IntersectionObserver(entries => {
@@ -40,7 +40,7 @@ const useRepeatReveal = () => {
     }, { threshold:0.12, rootMargin:'0px 0px -40px 0px' });
     els.forEach(el => obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, deps);
 };
 
 const Skeleton = ({ width='100%', height='20px', style={} }) => (
@@ -117,7 +117,7 @@ const HonoursCard = ({ title, badge, items, statKey, statLabel, loading }) => {
    PLAYERS COMPONENT
 ═══════════════════════════════════════════════════════════ */
 export default function Players() {
-  usePageLoader(); useRepeatReveal(); useCounterAnimation(); useFloatCounter(); useTilt();
+  usePageLoader();  useCounterAnimation(); useFloatCounter(); useTilt();
 
   const [players,     setPlayers]     = useState([]);
   const [allPlayers,  setAllPlayers]  = useState([]); // unfiltered for search
@@ -129,6 +129,8 @@ export default function Players() {
   const [visibleCount,setVisibleCount]= useState(8);
   const [loadState,   setLoadState]   = useState('idle');
   const searchRef = useRef(null);
+
+  useRepeatReveal([players]);
 
   useEffect(() => {
     const fetchAll = async () => {
