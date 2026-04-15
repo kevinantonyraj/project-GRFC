@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { api } from '../../../backend/api/api.js';
 import "../assets/css/home.css";
 import Footer from '../components/Footer.jsx';
 import Navbar from '../components/Navbar.jsx';
@@ -149,7 +150,7 @@ const GalleryItem = ({ item, onOpen }) => {
 ═══════════════════════════════════════════════════════════ */
 export default function Home() {
   usePageLoader();
-  useScrollReveal();
+  
   useCounterAnimation();
   useProgressBar();
   useTilt();
@@ -159,6 +160,7 @@ export default function Home() {
   const [snapshot, setSnapshot] = useState(null);
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState(null);
+  useScrollReveal([homeData]);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -336,7 +338,7 @@ export default function Home() {
                 <span className="stat-icon">{icon}</span>
                 {loading
                   ? <Skeleton height="40px" width="80px" style={{ margin: '8px auto' }} />
-                  : <span className="stat-number" data-count={count}>0</span>
+                  : <span className="stat-number" data-count={count}>{count}</span>
                 }
                 <span className="stat-label">{label}</span>
               </div>
@@ -363,7 +365,7 @@ export default function Home() {
             </p>
           )}
 
-          <div className="match-center-grid">
+          <div className="match-center-grid" key={lastMatch?.id || 'empty'}>
             <div className="match-result-card card tilt-card" data-reveal data-delay="100">
               {loading ? (
                 <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -373,6 +375,7 @@ export default function Home() {
                 </div>
               ) : lastMatch ? (
                 <>
+                  
                   <div className="match-meta">
                     <span>📅 {new Date(lastMatch.date).toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'short', year:'numeric' })}</span>
                     <span>📍 {lastMatch.venue}</span>
@@ -447,7 +450,7 @@ export default function Home() {
                       <div className="scorer-avatar">{initials}</div>
                       <div className="scorer-info"><strong>{name}</strong><span>{position}</span></div>
                       <div className="scorer-goals">
-                        <span data-count={total_goals}>0</span><small>GOALS</small>
+                        <span data-count={total_goals}>{total_goals}</span><small>GOALS</small>
                       </div>
                     </div>
                   ))
@@ -507,7 +510,7 @@ export default function Home() {
                 <div className="snapshot-value">
                   {loading
                     ? <Skeleton height="36px" width="60px" />
-                    : <><span data-count={count}>0</span>{suffix}</>
+                    : <><span data-count={count}>{count}</span>{suffix}</>
                   }
                 </div>
                 <div className="progress-bar">

@@ -27,7 +27,7 @@ const Skeleton = ({ width='100%', height='20px', style={} }) => (
   <div style={{ width, height, borderRadius:'6px', background:'linear-gradient(90deg,var(--bg-card) 25%,rgba(255,255,255,0.05) 50%,var(--bg-card) 75%)', backgroundSize:'200% 100%', animation:'shimmer 1.5s infinite', ...style }}/>
 );
 
-const useRepeatReveal = () => {
+const useRepeatReveal = (deps = []) => {
   useEffect(() => {
     const els = document.querySelectorAll('[data-reveal]');
     const obs = new IntersectionObserver(entries => {
@@ -38,7 +38,7 @@ const useRepeatReveal = () => {
     }, { threshold:0.12, rootMargin:'0px 0px -40px 0px' });
     els.forEach(el => obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, deps);
 };
 
 /* ── Staff Modal ─────────────────────────────────────────── */
@@ -160,7 +160,7 @@ const AllMembersModal = ({ staff, onClose, onSelectMember }) => {
    CLUB COMPONENT
 ═══════════════════════════════════════════════════════════ */
 export default function Club() {
-  usePageLoader(); useRepeatReveal(); useCounterAnimation(); useTilt();
+  usePageLoader();  useTilt();
 
   const [staff,          setStaff]          = useState([]);
   const [assets,         setAssets]         = useState([]);   // dynamic from DB
@@ -168,6 +168,9 @@ export default function Club() {
   const [error,          setError]          = useState(null);
   const [modalMember,    setModalMember]    = useState(null);
   const [showAllMembers, setShowAllMembers] = useState(false);
+
+  useRepeatReveal([assets, staff]);   // ← after state is declared
+  useCounterAnimation([assets]); 
 
   const TABLE_LIMIT = 5;
   const [tableCount, setTableCount] = useState(TABLE_LIMIT);
@@ -261,7 +264,7 @@ export default function Club() {
               assets.map(({ id, icon, count, label }) => (
                 <div className="asset-card stat-card tilt-card" key={id}>
                   <span className="stat-icon">{icon}</span>
-                  <span className="stat-number" data-count={count}>0</span>
+                  <span className="stat-number" data-count={count}>{count}</span>
                   <span className="stat-label">{label}</span>
                 </div>
               ))

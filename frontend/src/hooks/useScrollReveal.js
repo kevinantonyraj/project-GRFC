@@ -1,7 +1,7 @@
 // ── useScrollReveal ──────────────────────────────────────────
 import { useEffect, useRef } from 'react';
 
-const useScrollReveal = () => {
+const useScrollReveal = (deps = []) => {
   useEffect(() => {
     const els = document.querySelectorAll('[data-reveal]');
  
@@ -23,7 +23,7 @@ const useScrollReveal = () => {
  
     els.forEach(el => obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, deps);
 };
 
 export default useScrollReveal;
