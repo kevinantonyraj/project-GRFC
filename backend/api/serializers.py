@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (
-    Team, Player, Match, Goal, MatchAppearance,
+    ClubAsset, Team, Player, Match, Goal, MatchAppearance,
     DailyEntry, Tournament, TournamentTeam,
     TournamentSquad, Staff, Partner
 )
@@ -22,6 +22,9 @@ class TeamSerializer(serializers.ModelSerializer):
 # ═══════════════════════════════════════════════════════════
 class PlayerSerializer(serializers.ModelSerializer):
     current_team = TeamSerializer(read_only=True)
+    total_appearances = serializers.IntegerField(read_only=True)
+    total_goals       = serializers.IntegerField(read_only=True)
+    total_assists     = serializers.IntegerField(read_only=True)
 
     class Meta:
         model  = Player
@@ -181,3 +184,9 @@ class PartnerSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Partner
         fields = '__all__'
+
+
+class ClubAssetSerializer(serializers.ModelSerializer):
+    class Meta:
+         model = ClubAsset
+         fields = '__all__'
