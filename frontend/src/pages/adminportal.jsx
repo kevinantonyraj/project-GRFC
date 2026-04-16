@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { adminApi } from '../../../backend/api/adminapi';
+import { authApi, getUser, clearTokens } from '../../../backend/api/auth.js';
 
 /* ════════════════════════════════════════════════════════════
    DESIGN TOKENS
@@ -880,12 +881,51 @@ export default function AdminPortal() {
   const [section,   setSection]   = useState('matches');
   const [bootstrap, setBootstrap] = useState(null);
   const [toast,     setToast]     = useState(null);
+  const [authUser,  setAuthUser]  = useState(null);    // ← ADD
+  const [checking,  setChecking]  = useState(true);    // ← ADD
 
-  const showToast = useCallback((msg,type='ok') => setToast({msg,type,key:Date.now()}), []);
-  const refreshBootstrap = useCallback(async () => { const r=await adminApi.bootstrap(); if(r.success) setBootstrap(r.data); }, []);
-  useEffect(() => { refreshBootstrap(); }, [refreshBootstrap]);
+  // ── Verify JWT token on every portal load ────────────────
+  useEffect(() => {
+    const verify = async () => {
+      const res = await authApi.verify();
+      if (!res.success) {
+        // Token missing, invalid, or expired — send to login
+        clearTokens();
+        window.location.href = '/admin';
+        return;
+      }
+      setAuthUser(res.data);    // store logged-in user info
+      setChecking(false);
+    };
+    verify();
+  }, []);
 
-  const props = { toast:showToast, bootstrap, refreshBootstrap };
+  // ── Logout handler ────────────────────────────────────────
+  const handleLogout = async () => {
+    await authApi.logout();
+    window.location.href = '/admin';
+  };
+
+  const showToast       = useCallback((msg, type='ok') => setToast({ msg, type, key: Date.now() }), []);
+  const refreshBootstrap = useCallback(async () => {
+    const r = await adminApi.bootstrap();
+    if (r.success) setBootstrap(r.data);
+  }, []);
+
+  useEffect(() => {
+    if (!checking) refreshBootstrap();
+  }, [checking, refreshBootstrap]);
+
+  // Show nothing while checking auth (prevents flash of portal)
+  if (checking) {
+    return (
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', background:'#0a0810', color:'#C9980A', fontFamily:'monospace', fontSize:'0.9rem' }}>
+        Verifying session…
+      </div>
+    );
+  }
+
+  
 
   return (
     <div style={S.page}>
@@ -923,8 +963,23 @@ export default function AdminPortal() {
           ))}
         </nav>
         <div style={{padding:'18px',borderTop:`1px solid ${C.border}`}}>
-          <a href="/" style={{display:'flex',alignItems:'center',gap:'10px',color:C.muted,textDecoration:'none',fontSize:'0.88rem',fontFamily:C.mono}}>← Public Site</a>
-        </div>
+  {/* Logged-in user info */}
+  {authUser && (
+    <div style={{marginBottom:'14px',padding:'12px',background:'rgba(201,152,10,0.06)',border:`1px solid rgba(201,152,10,0.2)`,borderRadius:'10px'}}>
+      <div style={{fontFamily:C.mono,fontSize:'0.6rem',color:C.gold,letterSpacing:'0.12em',marginBottom:'4px'}}>LOGGED IN AS</div>
+      <div style={{fontSize:'0.82rem',color:C.ivory,fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{authUser.email}</div>
+    </div>
+  )}
+  <a href="/" style={{display:'flex',alignItems:'center',gap:'10px',color:C.muted,textDecoration:'none',fontSize:'0.88rem',fontFamily:C.mono,marginBottom:'10px'}}>← Public Site</a>
+  <button
+    onClick={handleLogout}
+    style={{width:'100%',display:'flex',alignItems:'center',gap:'10px',padding:'10px 14px',borderRadius:'9px',background:'rgba(248,113,113,0.08)',border:'1px solid rgba(248,113,113,0.25)',color:'#f87171',fontSize:'0.88rem',cursor:'pointer',fontFamily:C.mono,transition:'all 0.2s'}}
+    onMouseEnter={e=>e.currentTarget.style.background='rgba(248,113,113,0.15)'}
+    onMouseLeave={e=>e.currentTarget.style.background='rgba(248,113,113,0.08)'}
+  >
+    🚪 Logout
+  </button>
+</div>
       </div>
 
       <main style={S.main}>

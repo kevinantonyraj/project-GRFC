@@ -1,12 +1,26 @@
+import { getToken, clearTokens } from './auth.js';
+
 const BASE = 'http://127.0.0.1:8000/api';
 
 const req = async (method, url, data=null) => {
+  const token = getToken();
   const opts = {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type':  'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
   };
   if (data) opts.body = JSON.stringify(data);
   const res = await fetch(BASE + url, opts);
+
+  // If token expired mid-session, redirect to login
+  if (res.status === 401) {
+    clearTokens();
+    window.location.href = '/admin';
+    return { success: false, message: 'Session expired. Please log in again.' };
+  }
+
   return res.json();
 };
 

@@ -3,6 +3,7 @@ import '../assets/css/global.css';
 import '../assets/css/admin.css';
 import usePageLoader from '../hooks/usePageLoader';
 import useTilt       from '../hooks/useTilt';
+import { authApi, saveTokens, getToken } from '../../../backend/api/auth.js';
 
 /* ── Forgot Password Modal ───────────────────────────────── */
 const ForgotModal = ({ onClose }) => {
@@ -49,8 +50,7 @@ export default function Admin() {
   usePageLoader();
   useTilt();
 
-  /* ── Form state ────────────────────────────────────────── */
-  const [email,      setEmail]      = useState('admin@goldenrockfc.com');
+  const [email,      setEmail]      = useState('');
   const [password,   setPassword]   = useState('');
   const [showPw,     setShowPw]     = useState(false);
   const [human,      setHuman]      = useState(false);
@@ -61,36 +61,59 @@ export default function Admin() {
   const [shake,      setShake]      = useState(false);
   const [forgotOpen, setForgotOpen] = useState(false);
 
+  // ── If already logged in, go straight to portal ─────────
+  useEffect(() => {
+    if (getToken()) {
+      // Verify token is still valid before redirecting
+      authApi.verify().then(res => {
+        if (res.success) window.location.href = '/admin-portal';
+      });
+    }
+  }, []);
+
   const handleKey = e => { if (e.key === 'Enter') attemptLogin(); };
 
-  const attemptLogin = () => {
+  const attemptLogin = async () => {
     setEmailError(false);
     setPassError(false);
     setFeedback({ msg: '', cls: '' });
 
+    // Client-side validation
     let valid = true;
     if (!email || !email.includes('@')) { setEmailError(true); valid = false; }
     if (!password || password.length < 6) { setPassError(true); valid = false; }
-    if (!human) { setFeedback({ msg: '⚠ Please confirm you are not a robot.', cls: 'error' }); return; }
+    if (!human) {
+      setFeedback({ msg: '⚠ Please confirm you are not a robot.', cls: 'error' });
+      return;
+    }
     if (!valid) return;
 
     setLoginState('loading');
-    setTimeout(() => {
-      setLoginState('idle');
-      if (email && password.length >= 6) {
+
+    try {
+      const res = await authApi.login(email, password);
+
+      if (res.success) {
+        // Save tokens to localStorage
+        saveTokens(res.data.access, res.data.refresh, res.data.user);
         setFeedback({ msg: '✓ Access granted. Redirecting…', cls: 'success' });
+        // Redirect to admin portal after short delay
         setTimeout(() => {
-          alert('✓ Welcome to Golden Rock FC Admin Portal!\n\n(Dashboard page would load here in production.)');
-          setFeedback({ msg: '', cls: '' });
-        }, 1800);
+          window.location.href = '/admin-portal';
+        }, 1000);
       } else {
-        setFeedback({ msg: '✗ Invalid credentials. Please try again.', cls: 'error' });
+        setFeedback({ msg: `✗ ${res.message || 'Invalid credentials. Please try again.'}`, cls: 'error' });
         setShake(true);
         setTimeout(() => setShake(false), 500);
       }
-    }, 1800);
+    } catch {
+      setFeedback({ msg: '✗ Server error. Make sure the backend is running.', cls: 'error' });
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+    } finally {
+      setLoginState('idle');
+    }
   };
-
   /* ══════════════════════════════════════════════════════════
      RENDER
   ══════════════════════════════════════════════════════════ */
