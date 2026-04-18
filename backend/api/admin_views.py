@@ -12,10 +12,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response   import Response
 from django.shortcuts          import get_object_or_404
 from django.utils.dateparse   import parse_datetime
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from datetime import timedelta
+from .models import PortalUser
 
-from django.contrib.auth        import authenticate
-from django.contrib.auth.models import User
-from rest_framework_simplejwt.tokens import RefreshToken
+
 
 from .models import (
     Team, Player, Match, Goal, MatchAppearance,
@@ -563,87 +564,95 @@ def asset_detail(request, pk):
 #  AUTH — Login, Verify, Logout
 # ═══════════════════════════════════════════════════════════
 
+
 @api_view(['POST'])
 def admin_login(request):
-    """
-    Accepts { email, password }.
-    Checks against Django User table.
-    Returns JWT access + refresh tokens on success.
-    """
-    email    = request.data.get('email', '').strip().lower()
+    email = request.data.get('email', '').strip().lower()
     password = request.data.get('password', '')
 
     if not email or not password:
-        return err('Email and password are required', 400)
+        return err('Email and password required', 400)
 
-    # Django auth uses username — look up user by email first
     try:
-        user = User.objects.get(email__iexact=email)
-    except User.DoesNotExist:
-        return err('Invalid credentials', 401)
-
-    # Check password and active status
-    user = authenticate(username=user.username, password=password)
-    if user is None:
+        user = PortalUser.objects.get(email__iexact=email)
+    except PortalUser.DoesNotExist:
         return err('Invalid credentials', 401)
 
     if not user.is_active:
-        return err('Account is disabled', 403)
+        return err('Account disabled', 403)
 
-    if not user.is_staff:
-        return err('Access denied — admin accounts only', 403)
+    if not user.check_password(password):
+        return err('Invalid credentials', 401)
 
-    # Generate JWT tokens
+    # Proper refresh token
     refresh = RefreshToken.for_user(user)
+
+    # Custom claims
+    refresh['portal_user_id'] = user.id
+    refresh['email'] = user.email
+
+    access = refresh.access_token
+    access['portal_user_id'] = user.id
+    access['email'] = user.email
+
+    # Expiry
+    access.set_exp(lifetime=timedelta(hours=8))
+    refresh.set_exp(lifetime=timedelta(days=7))
+
     return ok({
-        'access':  str(refresh.access_token),
+        'access': str(access),
         'refresh': str(refresh),
         'user': {
-            'email':      user.email,
-            'username':   user.username,
-            'first_name': user.first_name,
-            'last_name':  user.last_name,
+            'email': user.email,
+            'full_name': user.full_name
         }
     }, 'Login successful')
 
 
 @api_view(['GET'])
 def admin_verify(request):
-    """
-    Verifies the JWT token sent in Authorization header.
-    Returns user info if valid, 401 if not.
-    Used by adminportal.jsx on every page load.
-    """
-    from rest_framework_simplejwt.authentication import JWTAuthentication
-    from rest_framework.exceptions import AuthenticationFailed
-
     try:
-        auth = JWTAuthentication()
-        result = auth.authenticate(request)
-        if result is None:
-            return err('No token provided', 401)
-        user, token = result
-        if not user.is_active or not user.is_staff:
-            return err('Access denied', 403)
+        auth_header = request.headers.get('Authorization')
+
+        if not auth_header:
+            return err('No token', 401)
+
+        if not auth_header.startswith('Bearer '):
+            return err('Invalid header', 401)
+
+        token = auth_header.split(' ')[1]
+
+        decoded = AccessToken(token)
+
+        user_id = decoded.get('portal_user_id')
+
+        if not user_id:
+            return err('Invalid token payload', 401)
+
+        user = PortalUser.objects.get(id=user_id, is_active=True)
+
         return ok({
-            'email':      user.email,
-            'username':   user.username,
-            'first_name': user.first_name,
-        }, 'Token valid')
-    except Exception:
-        return err('Invalid or expired token', 401)
+            'email': user.email,
+            'full_name': user.full_name
+        }, 'Valid')
+
+    except PortalUser.DoesNotExist:
+        return err('User not found', 401)
+
+    except Exception as e:
+        return err(str(e), 401)
 
 
 @api_view(['POST'])
 def admin_logout(request):
-    """
-    Blacklists the refresh token so it cannot be reused.
-    """
     try:
         refresh_token = request.data.get('refresh')
+
         if refresh_token:
             token = RefreshToken(refresh_token)
             token.blacklist()
-        return ok(msg='Logged out successfully')
+
+        return ok(msg='Logged out')
+
     except Exception:
         return ok(msg='Logged out')
