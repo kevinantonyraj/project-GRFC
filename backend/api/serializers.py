@@ -112,15 +112,33 @@ class MatchSerializer(serializers.ModelSerializer):
 #  Full match details for Daily page
 # ═══════════════════════════════════════════════════════════
 class DailyEntrySerializer(serializers.ModelSerializer):
-    match       = MatchSerializer(read_only=True)
-    motm_player = PlayerSerializer(read_only=True)
+    motm_player_name = serializers.CharField(
+        source='motm_player.name', read_only=True, default=None
+    )
+    motm_player_id   = serializers.IntegerField(
+        source='motm_player.id',   read_only=True, default=None
+    )
+    # Match details for the card
+    home_team_name   = serializers.CharField(source='match.home_team.name',       read_only=True)
+    away_team_name   = serializers.CharField(source='match.away_team.name',       read_only=True)
+    home_team_code   = serializers.CharField(source='match.home_team.short_code', read_only=True)
+    away_team_code   = serializers.CharField(source='match.away_team.short_code', read_only=True)
+    home_score       = serializers.IntegerField(source='match.home_score',        read_only=True)
+    away_score       = serializers.IntegerField(source='match.away_score',        read_only=True)
+    result           = serializers.CharField(source='match.result',               read_only=True)
+    venue            = serializers.CharField(source='match.venue',                read_only=True)
+    kick_off         = serializers.DateTimeField(source='match.date',             read_only=True)
 
     class Meta:
         model  = DailyEntry
         fields = [
             'id', 'date', 'competition', 'notes',
-            'match', 'motm_player',
+            'motm_player_name', 'motm_player_id',
             'motm_goals', 'motm_assists', 'motm_rating',
+            'home_team_name', 'away_team_name',
+            'home_team_code', 'away_team_code',
+            'home_score', 'away_score',
+            'result', 'venue', 'kick_off',
         ]
 
 

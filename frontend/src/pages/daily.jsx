@@ -364,24 +364,40 @@ export default function Daily() {
 
   const fetchEntry = useCallback(async (date=null) => {
   try {
-    setLoading(true); setError(null);
+    setLoading(true);
+    setError(null);
     const data = await api.daily(date);
-    setEntry(data.entry);
-    if (data.all_dates?.length) {
-      setAllDates(data.all_dates);
-      setActiveDate(data.entry?.date || data.all_dates[0]);
-    }
-  } catch (e) {
-    // Only show error if there's genuinely no data at all
-    // If we already have allDates loaded, just clear the entry
-    if (allDates.length === 0) {
-      setError('No daily entries found. Add matches via the admin portal.');
+
+    // Sort dates newest → oldest
+    const sorted = (data.all_dates || []).sort((a,b) => new Date(b) - new Date(a));
+    
+    const unique = [...new Set(sorted)];
+    setAllDates(unique);
+
+    if (data.entry && data.entry.length > 0) {
+      setEntry(data.entry);
+      setActiveDate(data.date || unique[0]);
+      setError(null);
     } else {
-      setError('No match found for this date.');
+      setEntry([]);
+      if (date) {
+        setError('No match found for this date.');
+      } else if (unique.length > 0) {
+        // dates exist but selected date has no entry — load latest
+        fetchEntry(unique[0]);
+        return;
+      } else {
+        setError('No daily entries yet.');
+      }
     }
-    setEntry(null);
-  } finally { setLoading(false); }
-    }, [allDates.length]);
+  } catch {
+    setError('Failed to load. Make sure the server is running.');
+    setEntry([]);
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
 
   useEffect(() => { fetchEntry(); }, [fetchEntry]);
 
@@ -395,14 +411,14 @@ export default function Daily() {
     fetchEntry(dateStr);
   };
 
-  /* ── Derived data ──────────────────────────────────────── */
+  /* ── Derived data ──────────────────────────────────────── 
   const match      = entry?.match || null;
   const motmPlayer = entry?.motm_player || null;
 
   const homeGoals = match?.goals?.filter(g => g.team_name === match.home_team_name && !g.is_own_goal) || [];
   const awayGoals = match?.goals?.filter(g => g.team_name === match.away_team_name && !g.is_own_goal) || [];
   const homeSquad = match?.appearances?.filter(a => a.team_name === match.home_team_name) || [];
-  const awaySquad = match?.appearances?.filter(a => a.team_name === match.away_team_name) || [];
+  const awaySquad = match?.appearances?.filter(a => a.team_name === match.away_team_name) || [];  */ 
 
   const posCls = { GK:'gk', DEF:'def', MID:'mid', FWD:'fwd' };
 
@@ -519,7 +535,7 @@ export default function Daily() {
           )}
 
           {/* No match but no error */}
-          {!error && !loading && !match && (
+          {!error && !loading && entry.length === 0 && (
             <div style={{ textAlign:'center', padding:'80px 20px', color:'var(--text-muted)', fontFamily:'var(--font-mono)', fontSize:'0.85rem' }}>
               <div style={{ fontSize:'3rem', marginBottom:'16px' }}>📭</div>
               <div style={{ color:'var(--ivory)', fontSize:'1rem', marginBottom:'8px' }}>No match data</div>
@@ -528,164 +544,110 @@ export default function Daily() {
           )}
 
           {/* Match content */}
-          {!error && !loading && match && (
+          {!error && !loading && entry.length > 0 && (
             <>
-              {/* ── Match Result Card ──────────────────────── */}
-              <div className="daily-match-card card tilt-card" data-reveal>
-                <div className="daily-match-header">
-                  <span className="badge badge-violet">{match.competition}</span>
-                  <span className="daily-date">
-                    📅 {new Date(match.date).toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'short', year:'numeric' })}
-                  </span>
-                  <span className="daily-venue">📍 {match.venue}</span>
-                  <span className="daily-time">
-                    🕗 {new Date(match.date).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' })}
-                  </span>
-                </div>
-                <div className="daily-score-block">
-                  <div className="daily-team">
-                    <div className="daily-team-crest home">✅</div>
-                    <h3>{match.home_team_name}</h3>
-                  </div>
-                  <div className="daily-score-center">
-                    <div className="daily-score-nums">
-                      <span className="ds-home">{match.home_score}</span>
-                      <span className="ds-dash">—</span>
-                      <span className="ds-away">{match.away_score}</span>
-                    </div>
-                    <div className={`badge badge-${match.result}`} style={{marginTop:'8px'}}>
-                      {match.result.toUpperCase()}
-                    </div>
-                  </div>
-                  <div className="daily-team">
-                    <div className="daily-team-crest away">⏱️</div>
-                    <h3>{match.away_team_name}</h3>
-                  </div>
-                </div>
-              </div>
+              {entry.map((item, idx) => (
+                <div key={item.id} style={{ marginBottom:'28px' }}>
 
-              {/* ── Scorers + Assists + Notes ──────────────── */}
-              <div className="daily-details-grid">
-                <div className="daily-scorers card" data-reveal data-delay="80">
+                  {/* Match Result Card */}
+                  <div className="daily-match-card card tilt-card" data-reveal>
+                    <div className="daily-match-header">
+                      <span className="badge badge-violet">{item.competition}</span>
 
-                  {/* Home */}
-                  <div className="daily-scorers-col">
-                    <h4>⚡ {match.home_team_name}</h4>
-                    {homeGoals.length > 0 ? homeGoals.map((g, i) => (
-                      <div className="scorer-row" key={i}>
-                        <span>⚽ {g.player_name}</span>
-                        <span className="goal-min">{g.minute}'</span>
+                      <span className="daily-date">
+                        📅 {new Date(item.kick_off).toLocaleDateString('en-GB', {
+                          weekday:'long',
+                          day:'numeric',
+                          month:'short',
+                          year:'numeric'
+                        })}
+                      </span>
+
+                      <span className="daily-venue">📍 {item.venue}</span>
+
+                      <span className="daily-time">
+                        🕗 {new Date(item.kick_off).toLocaleTimeString('en-GB', {
+                          hour:'2-digit',
+                          minute:'2-digit'
+                        })}
+                      </span>
+                    </div>
+
+                    <div className="daily-score-block">
+                      <div className="daily-team">
+                        <div className="daily-team-crest home">🏠</div>
+                        <h3>{item.home_team_name}</h3>
                       </div>
-                    )) : <div className="scorer-row" style={{color:'var(--text-muted)'}}>No goals</div>}
-                    {homeSquad.filter(a => a.assists > 0).length > 0 && (
-                      <>
-                        <div style={{ marginTop:'10px', fontFamily:'var(--font-mono)', fontSize:'0.65rem', color:'var(--gold)', letterSpacing:'0.1em' }}>ASSISTS</div>
-                        {homeSquad.filter(a => a.assists > 0).map((a, i) => (
-                          <div className="scorer-row" key={i}>
-                            <span>🎯 {a.player_name}</span>
-                            <span className="goal-min">{a.assists}</span>
-                          </div>
-                        ))}
-                      </>
-                    )}
-                  </div>
 
-                  {/* Away */}
-                  <div className="daily-scorers-col" style={{opacity:0.75}}>
-                    <h4>⚡ {match.away_team_name}</h4>
-                    {awayGoals.length > 0 ? awayGoals.map((g, i) => (
-                      <div className="scorer-row" key={i}>
-                        <span style={{color:'var(--text-muted)'}}>⚽ {g.player_name}</span>
-                        <span className="goal-min">{g.minute}'</span>
-                      </div>
-                    )) : <div className="scorer-row" style={{color:'var(--text-muted)'}}>No goals</div>}
-                    {awaySquad.filter(a => a.assists > 0).length > 0 && (
-                      <>
-                        <div style={{ marginTop:'10px', fontFamily:'var(--font-mono)', fontSize:'0.65rem', color:'var(--gold)', letterSpacing:'0.1em' }}>ASSISTS</div>
-                        {awaySquad.filter(a => a.assists > 0).map((a, i) => (
-                          <div className="scorer-row" key={i}>
-                            <span style={{color:'var(--text-muted)'}}>🎯 {a.player_name}</span>
-                            <span className="goal-min">{a.assists}</span>
-                          </div>
-                        ))}
-                      </>
-                    )}
-                  </div>
-
-                </div>
-
-                <div className="daily-notes card" data-reveal data-delay="160">
-                  <h4>📋 NOTES</h4>
-                  <p>{entry?.notes || 'No notes recorded for this match.'}</p>
-                </div>
-              </div>
-
-              {/* ── Both Squads + MOTM ─────────────────────── */}
-              <div className="daily-squad-motm">
-
-                <div className="squad-section card" data-reveal data-delay="80">
-                  <div className="squad-section-header">
-                    <h3>Match Squads</h3>
-                    <span style={{fontFamily:'var(--font-mono)', fontSize:'0.7rem', color:'var(--text-muted)'}}>
-                      {match.venue}
-                    </span>
-                  </div>
-
-                  {/* Home squad */}
-                  <div style={{marginBottom:'20px'}}>
-                    <div style={{ fontFamily:'var(--font-mono)', fontSize:'0.68rem', color:'var(--gold)', letterSpacing:'0.1em', marginBottom:'10px', paddingBottom:'6px', borderBottom:'1px solid var(--border)' }}>
-                      {match.home_team_name} — {homeSquad.length} Players
-                    </div>
-                    <div className="squad-grid">
-                      {homeSquad.length > 0 ? homeSquad.map((a, i) => (
-                        <div key={i} className={`squad-tag ${posCls[a.player_position] || 'fwd'}`}>
-                          {a.player_name} <em>{a.player_position}</em>
-                          {a.is_substitute && <em> SUB</em>}
-                          {a.is_motm && ' ⭐'}
+                      <div className="daily-score-center">
+                        <div className="daily-score-nums">
+                          <span className="ds-home">{item.home_score}</span>
+                          <span className="ds-dash">—</span>
+                          <span className="ds-away">{item.away_score}</span>
                         </div>
-                      )) : <span style={{color:'var(--text-muted)', fontSize:'0.8rem'}}>No squad data</span>}
-                    </div>
-                  </div>
 
-                  {/* Away squad */}
-                  <div>
-                    <div style={{ fontFamily:'var(--font-mono)', fontSize:'0.68rem', color:'var(--gold)', letterSpacing:'0.1em', marginBottom:'10px', paddingBottom:'6px', borderBottom:'1px solid var(--border)' }}>
-                      {match.away_team_name} — {awaySquad.length} Players
-                    </div>
-                    <div className="squad-grid">
-                      {awaySquad.length > 0 ? awaySquad.map((a, i) => (
-                        <div key={i} className={`squad-tag ${posCls[a.player_position] || 'fwd'}`} style={{opacity:0.8}}>
-                          {a.player_name} <em>{a.player_position}</em>
-                          {a.is_substitute && <em> SUB</em>}
+                        <div
+                          className={`badge badge-${item.result}`}
+                          style={{ marginTop:'8px' }}
+                        >
+                          {item.result?.toUpperCase()}
                         </div>
-                      )) : <span style={{color:'var(--text-muted)', fontSize:'0.8rem'}}>No squad data</span>}
+                      </div>
+
+                      <div className="daily-team">
+                        <div className="daily-team-crest away">🚩</div>
+                        <h3>{item.away_team_name}</h3>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* MOTM */}
-                <div className="motm-section card tilt-card" data-reveal data-delay="160">
-                  <div className="motm-stars">⭐ ⭐ ⭐</div>
-                  <div className="motm-title-label">MAN OF THE MATCH</div>
-                  {motmPlayer ? (
-                    <>
-                      <div className="motm-avatar-big">{motmPlayer.initials}</div>
-                      <h3 className="motm-player-name">{motmPlayer.name.toUpperCase()}</h3>
-                      <span className="motm-pos">{motmPlayer.position} · #{motmPlayer.number}</span>
-                      <div className="motm-stats-row">
-                        <div><span>{entry.motm_goals}</span><small>Goals</small></div>
-                        <div><span>{entry.motm_assists}</span><small>Assists</small></div>
-                        <div><span>{entry.motm_rating || '—'}</span><small>Rating</small></div>
-                      </div>
-                    </>
-                  ) : (
-                    <div style={{color:'var(--text-muted)', fontSize:'0.8rem', padding:'20px 0'}}>
-                      No MOTM assigned.
+                  {/* Notes */}
+                  {item.notes && (
+                    <div
+                      className="daily-notes card"
+                      style={{ marginTop:'14px' }}
+                      data-reveal
+                    >
+                      <h4>📋 NOTES</h4>
+                      <p>{item.notes}</p>
                     </div>
                   )}
-                </div>
 
-              </div>
+                  {/* MOTM */}
+                  {item.motm_player_name && (
+                    <div
+                      className="motm-section card tilt-card"
+                      style={{ marginTop:'14px' }}
+                      data-reveal
+                    >
+                      <div className="motm-stars">⭐ ⭐ ⭐</div>
+                      <div className="motm-title-label">MAN OF THE MATCH</div>
+
+                      <h3 className="motm-player-name">
+                        {item.motm_player_name.toUpperCase()}
+                      </h3>
+
+                      <div className="motm-stats-row">
+                        <div>
+                          <span>{item.motm_goals}</span>
+                          <small>Goals</small>
+                        </div>
+
+                        <div>
+                          <span>{item.motm_assists}</span>
+                          <small>Assists</small>
+                        </div>
+
+                        <div>
+                          <span>{item.motm_rating || '—'}</span>
+                          <small>Rating</small>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              ))}
             </>
           )}
 

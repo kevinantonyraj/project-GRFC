@@ -63,25 +63,38 @@ def home_data(request):
 def daily_data(request, date=None):
     date = date or request.query_params.get('date', None)
 
-    if date:
-        entry = get_object_or_404(DailyEntry, date=date)
-    else:
-        entry = DailyEntry.objects.order_by('-date').first()
-        if not entry:
-            return Response(
-                {'detail': 'No daily entries found.'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
+    # ── All unique dates — deduplicated and sorted newest first ──
     all_dates = list(
-        DailyEntry.objects.order_by('-date').values_list('date', flat=True)
+        DailyEntry.objects
+        .order_by('-date')
+        .values_list('date', flat=True)
+        .distinct()   # ← removes duplicate dates
     )
 
-    return Response({
-        'entry':     DailyEntrySerializer(entry).data,
-        'all_dates': [str(d) for d in all_dates],
-    })
+    if not all_dates:
+        return Response({
+            'entry':   [],
+            'all_dates': [],
+        })
 
+    # ── Pick which date to show ───────────────────────────────
+    if date:
+        target_date = date
+    else:
+        target_date = str(all_dates[0])   # most recent date
+
+    # ── Get ALL entries for that date (multiple matches allowed) ──
+    entries = DailyEntry.objects.filter(
+        date=target_date
+    ).select_related(
+        'match', 'match__home_team', 'match__away_team', 'motm_player'
+    ).order_by('match__date')   # order by kick-off time within the day
+
+    return Response({
+        'entry':   DailyEntrySerializer(entries, many=True).data,
+        'all_dates': [str(d) for d in all_dates],
+        'date':      target_date,
+    })
 
 # ═══════════════════════════════════════════════════════════
 #  MATCHES PAGE
