@@ -36,5 +36,10 @@ urlpatterns = [
     path('admin/staff/<int:pk>/',             av.staff_detail,             name='admin-staff-detail'),
     path('admin/partners/',                   av.partner_list_create,      name='admin-partners'),
     path('admin/partners/<int:pk>/',          av.partner_detail,           name='admin-partner-detail'),
-    path('admin/assets/', av.asset_list_create), path('admin/assets/<int:pk>/', av.asset_detail)
+    path('admin/assets/', av.asset_list_create), path('admin/assets/<int:pk>/', av.asset_detail),
+
+
+    path('auth/login/',   av.admin_login,   name='admin-login'),
+    path('auth/verify/',  av.admin_verify,  name='admin-verify'),
+    path('auth/logout/',  av.admin_logout,  name='admin-logout'),
 ]
