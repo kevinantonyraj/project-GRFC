@@ -547,35 +547,47 @@ export default function Daily() {
           {!error && !loading && entry.length > 0 && (
             <>
               {entry.map((item, idx) => (
-                <div key={item.id} style={{ marginBottom:'28px' }}>
-
-                  {/* Match Result Card */}
+                <div
+                  key={item.id || idx}
+                  className="daily-record-block"
+                  style={{
+                    marginBottom: '48px',
+                    paddingBottom: '12px',
+                    borderBottom:
+                      idx !== entry.length - 1
+                        ? '1px solid rgba(255,255,255,0.05)'
+                        : 'none',
+                  }}
+                >
+                  {/* ── Match Result Card ──────────────────────── */}
                   <div className="daily-match-card card tilt-card" data-reveal>
                     <div className="daily-match-header">
                       <span className="badge badge-violet">{item.competition}</span>
 
                       <span className="daily-date">
-                        📅 {new Date(item.kick_off).toLocaleDateString('en-GB', {
-                          weekday:'long',
-                          day:'numeric',
-                          month:'short',
-                          year:'numeric'
+                        📅{' '}
+                        {new Date(item.kick_off).toLocaleDateString('en-GB', {
+                          weekday: 'long',
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
                         })}
                       </span>
 
                       <span className="daily-venue">📍 {item.venue}</span>
 
                       <span className="daily-time">
-                        🕗 {new Date(item.kick_off).toLocaleTimeString('en-GB', {
-                          hour:'2-digit',
-                          minute:'2-digit'
+                        🕗{' '}
+                        {new Date(item.kick_off).toLocaleTimeString('en-GB', {
+                          hour: '2-digit',
+                          minute: '2-digit',
                         })}
                       </span>
                     </div>
 
                     <div className="daily-score-block">
                       <div className="daily-team">
-                        <div className="daily-team-crest home">🏠</div>
+                        <div className="daily-team-crest home">✅</div>
                         <h3>{item.home_team_name}</h3>
                       </div>
 
@@ -588,69 +600,197 @@ export default function Daily() {
 
                         <div
                           className={`badge badge-${item.result}`}
-                          style={{ marginTop:'8px' }}
+                          style={{ marginTop: '8px' }}
                         >
                           {item.result?.toUpperCase()}
                         </div>
                       </div>
 
                       <div className="daily-team">
-                        <div className="daily-team-crest away">🚩</div>
+                        <div className="daily-team-crest away">⏱️</div>
                         <h3>{item.away_team_name}</h3>
                       </div>
                     </div>
                   </div>
 
-                  {/* Notes */}
-                  {item.notes && (
+                  {/* ── Details Row ───────────────────────────── */}
+                  <div className="daily-details-grid">
                     <div
-                      className="daily-notes card"
-                      style={{ marginTop:'14px' }}
+                      className="daily-scorers card"
                       data-reveal
+                      data-delay="80"
                     >
-                      <h4>📋 NOTES</h4>
-                      <p>{item.notes}</p>
-                    </div>
-                  )}
+                      {/* Home */}
+                      <div className="daily-scorers-col">
+                        <h4>⚡ {item.home_team_name}</h4>
 
-                  {/* MOTM */}
-                  {item.motm_player_name && (
-                    <div
-                      className="motm-section card tilt-card"
-                      style={{ marginTop:'14px' }}
-                      data-reveal
-                    >
-                      <div className="motm-stars">⭐ ⭐ ⭐</div>
-                      <div className="motm-title-label">MAN OF THE MATCH</div>
-
-                      <h3 className="motm-player-name">
-                        {item.motm_player_name.toUpperCase()}
-                      </h3>
-
-                      <div className="motm-stats-row">
-                        <div>
-                          <span>{item.motm_goals}</span>
-                          <small>Goals</small>
+                        <div
+                          className="scorer-row"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          No scorer data
                         </div>
+                      </div>
 
-                        <div>
-                          <span>{item.motm_assists}</span>
-                          <small>Assists</small>
-                        </div>
+                      {/* Away */}
+                      <div
+                        className="daily-scorers-col"
+                        style={{ opacity: 0.75 }}
+                      >
+                        <h4>⚡ {item.away_team_name}</h4>
 
-                        <div>
-                          <span>{item.motm_rating || '—'}</span>
-                          <small>Rating</small>
+                        <div
+                          className="scorer-row"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          No scorer data
                         </div>
                       </div>
                     </div>
-                  )}
 
+                    <div
+                      className="daily-notes card"
+                      data-reveal
+                      data-delay="160"
+                    >
+                      <h4>📋 NOTES</h4>
+                      <p>
+                        {item.notes || 'No notes recorded for this match.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* ── Squad + MOTM ─────────────────────────── */}
+                  <div className="daily-squad-motm">
+                    {/* Squads */}
+                    <div
+                      className="squad-section card"
+                      data-reveal
+                      data-delay="80"
+                    >
+                      <div className="squad-section-header">
+                        <h3>Match Squads</h3>
+
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '0.7rem',
+                            color: 'var(--text-muted)',
+                          }}
+                        >
+                          {item.venue}
+                        </span>
+                      </div>
+
+                      {/* Home squad */}
+                      <div style={{ marginBottom: '20px' }}>
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '0.68rem',
+                            color: 'var(--gold)',
+                            letterSpacing: '0.1em',
+                            marginBottom: '10px',
+                            paddingBottom: '6px',
+                            borderBottom:
+                              '1px solid var(--border)',
+                          }}
+                        >
+                          {item.home_team_name} — 0 Players
+                        </div>
+
+                        <span
+                          style={{
+                            color: 'var(--text-muted)',
+                            fontSize: '0.8rem',
+                          }}
+                        >
+                          No squad data
+                        </span>
+                      </div>
+
+                      {/* Away squad */}
+                      <div>
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '0.68rem',
+                            color: 'var(--gold)',
+                            letterSpacing: '0.1em',
+                            marginBottom: '10px',
+                            paddingBottom: '6px',
+                            borderBottom:
+                              '1px solid var(--border)',
+                          }}
+                        >
+                          {item.away_team_name} — 0 Players
+                        </div>
+
+                        <span
+                          style={{
+                            color: 'var(--text-muted)',
+                            fontSize: '0.8rem',
+                          }}
+                        >
+                          No squad data
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* MOTM */}
+                    <div
+                      className="motm-section card tilt-card"
+                      data-reveal
+                      data-delay="160"
+                    >
+                      <div className="motm-stars">⭐ ⭐ ⭐</div>
+
+                      <div className="motm-title-label">
+                        MAN OF THE MATCH
+                      </div>
+
+                      {item.motm_player_name ? (
+                        <>
+                          <h3 className="motm-player-name">
+                            {item.motm_player_name.toUpperCase()}
+                          </h3>
+
+                          <div className="motm-stats-row">
+                            <div>
+                              <span>{item.motm_goals}</span>
+                              <small>Goals</small>
+                            </div>
+
+                            <div>
+                              <span>{item.motm_assists}</span>
+                              <small>Assists</small>
+                            </div>
+
+                            <div>
+                              <span>
+                                {item.motm_rating || '—'}
+                              </span>
+                              <small>Rating</small>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div
+                          style={{
+                            color: 'var(--text-muted)',
+                            fontSize: '0.8rem',
+                            padding: '20px 0',
+                          }}
+                        >
+                          No MOTM assigned.
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ))}
             </>
           )}
-
         </section>
       </div>
       <Footer/>
