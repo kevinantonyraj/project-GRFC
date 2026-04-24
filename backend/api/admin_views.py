@@ -92,6 +92,7 @@ def team_list_create(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def team_detail(request, pk):
     team = get_object_or_404(Team, pk=pk)
     if request.method == 'GET':
@@ -110,6 +111,7 @@ def team_detail(request, pk):
 #  PLAYERS
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def player_list_create(request):
     if request.method == 'GET':
@@ -142,6 +144,7 @@ def player_detail(request, pk):
 #  before passing to Match.objects.create()
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def match_list_create(request):
     if request.method == 'GET':
@@ -210,6 +213,7 @@ def match_list_create(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def match_detail(request, pk):
     match = get_object_or_404(Match, pk=pk)
     if request.method == 'GET':
@@ -239,6 +243,7 @@ def match_detail(request, pk):
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def goal_list_create(request):
     match_id = request.query_params.get('match_id')
     if request.method == 'GET':
@@ -266,6 +271,7 @@ def goal_list_create(request):
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def goal_delete(request, pk):
     get_object_or_404(Goal, pk=pk).delete()
     return ok(msg='Goal deleted')
@@ -275,6 +281,7 @@ def goal_delete(request, pk):
 #  APPEARANCES
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def appearance_list_create(request):
     match_id = request.query_params.get('match_id')
@@ -309,6 +316,7 @@ def appearance_list_create(request):
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def appearance_delete(request, pk):
     get_object_or_404(MatchAppearance, pk=pk).delete()
     return ok(msg='Appearance deleted')
@@ -318,6 +326,7 @@ def appearance_delete(request, pk):
 #  DAILY ENTRY
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def daily_entry_manage(request):
     if request.method == 'GET':
@@ -363,6 +372,7 @@ def daily_entry_manage(request):
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def daily_entry_delete(request, pk):
     get_object_or_404(DailyEntry, pk=pk).delete()
     return ok(msg='Daily entry deleted')
@@ -372,6 +382,7 @@ def daily_entry_delete(request, pk):
 #  TOURNAMENTS
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def tournament_list_create(request):
     if request.method == 'GET':
@@ -384,6 +395,7 @@ def tournament_list_create(request):
     return err(str(s.errors))
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def tournament_detail_manage(request, pk):
     t = get_object_or_404(Tournament, pk=pk)
@@ -399,6 +411,7 @@ def tournament_detail_manage(request, pk):
     return ok(msg='Tournament deleted')
 
 @api_view(['POST', 'DELETE'])
+@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def tournament_squad_manage(request):
     if request.method == 'POST':
@@ -420,6 +433,7 @@ def tournament_squad_manage(request):
         return err(str(e))
 
 @api_view(['POST', 'DELETE'])
+@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def tournament_team_manage(request):
     if request.method == 'POST':
@@ -447,6 +461,7 @@ def tournament_team_manage(request):
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def staff_list_create(request):
     if request.method == 'GET':
         return ok(StaffSerializer(Staff.objects.all(), many=True).data)
@@ -457,6 +472,7 @@ def staff_list_create(request):
     return err(str(s.errors))
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def staff_detail(request, pk):
     staff = get_object_or_404(Staff, pk=pk)
@@ -477,6 +493,7 @@ def staff_detail(request, pk):
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def partner_list_create(request):
     if request.method == 'GET':
         return ok(PartnerSerializer(Partner.objects.all().order_by('-last_met'), many=True).data)
@@ -487,6 +504,7 @@ def partner_list_create(request):
     return err(str(s.errors))
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def partner_detail(request, pk):
     partner = get_object_or_404(Partner, pk=pk)
@@ -516,6 +534,7 @@ ASSET_OPTIONS = [
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def asset_list_create(request):
     if request.method == 'GET':
         return ok(ClubAssetSerializer(ClubAsset.objects.all(), many=True).data)
@@ -542,6 +561,7 @@ def asset_list_create(request):
         return err(str(e))
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def asset_detail(request, pk):
     asset = get_object_or_404(ClubAsset, pk=pk)
