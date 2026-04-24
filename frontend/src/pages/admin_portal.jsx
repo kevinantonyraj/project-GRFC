@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { adminApi } from '../../../backend/api/adminapi';
+import { authApi, getUser, clearTokens } from '../../../backend/api/auth.js';
 
 /* ════════════════════════════════════════════════════════════
    DESIGN TOKENS
@@ -869,23 +870,74 @@ const ClubSection = ({ toast }) => {
    SIDEBAR NAV + ROOT
 ════════════════════════════════════════════════════════════ */
 const NAV = [
-  {id:'teams',icon:'🏟️',label:'Teams'},
-  {id:'players',icon:'👤',label:'Players'},
-  {id:'matches',icon:'⚽',label:'Matches'},
-  {id:'tournaments',icon:'🏆',label:'Tournaments'},
-  {id:'club',icon:'🏢',label:'Club & Staff'},
+  {id:'teams',      icon:'🏟️', label:'Teams'},
+  {id:'players',    icon:'👤', label:'Players'},
+  {id:'matches',    icon:'⚽', label:'Matches'},
+  {id:'tournaments',icon:'🏆', label:'Tournaments'},
+  {id:'club',       icon:'🏢', label:'Club & Staff'},
 ];
 
 export default function AdminPortal() {
   const [section,   setSection]   = useState('matches');
   const [bootstrap, setBootstrap] = useState(null);
   const [toast,     setToast]     = useState(null);
+  const [authUser,  setAuthUser]  = useState(null);
+  const [checking,  setChecking]  = useState(true);
 
-  const showToast = useCallback((msg,type='ok') => setToast({msg,type,key:Date.now()}), []);
-  const refreshBootstrap = useCallback(async () => { const r=await adminApi.bootstrap(); if(r.success) setBootstrap(r.data); }, []);
-  useEffect(() => { refreshBootstrap(); }, [refreshBootstrap]);
+  /* ── 1. Verify JWT on every load ─────────────────────── */
+  useEffect(() => {
+    const verify = async () => {
+      try {
+        const res = await authApi.verify();
+        if (res.success) {
+          setAuthUser(res.data);
+        } else {
+          clearTokens();
+          window.location.href = '/admin';
+        }
+      } catch {
+        clearTokens();
+        window.location.href = '/admin';
+      } finally {
+        setChecking(false);
+      }
+    };
+    verify();
+  }, []);
 
-  const props = { toast:showToast, bootstrap, refreshBootstrap };
+  /* ── 2. Load bootstrap data after auth confirmed ──────── */
+  const showToast        = useCallback((msg, type='ok') => setToast({ msg, type, key: Date.now() }), []);
+  const refreshBootstrap = useCallback(async () => {
+    const r = await adminApi.bootstrap();
+    if (r.success) setBootstrap(r.data);
+  }, []);
+
+  useEffect(() => {
+    if (!checking && authUser) refreshBootstrap();
+  }, [checking, authUser, refreshBootstrap]);
+
+  /* ── 3. Logout ────────────────────────────────────────── */
+  const handleLogout = async () => {
+    await authApi.logout();
+    window.location.href = '/admin';
+  };
+
+  /* ── 4. Show loading screen while verifying token ──────── */
+  if (checking) {
+    return (
+      <div style={{
+        display:'flex', alignItems:'center', justifyContent:'center',
+        height:'100vh', background:'#0a0810', flexDirection:'column', gap:'16px'
+      }}>
+        <div style={{ fontFamily:'"Courier New",monospace', fontSize:'0.85rem', color:'#C9980A', letterSpacing:'0.15em' }}>
+          VERIFYING SESSION…
+        </div>
+      </div>
+    );
+  }
+
+  /* ── 5. Full portal UI ────────────────────────────────── */
+  const props = { toast: showToast, bootstrap, refreshBootstrap };
 
   return (
     <div style={S.page}>
@@ -899,40 +951,102 @@ export default function AdminPortal() {
         button:active{transform:scale(0.97);}
       `}</style>
 
-      {toast&&<Toast key={toast.key} msg={toast.msg} type={toast.type} onDone={()=>setToast(null)}/>}
+      {toast && <Toast key={toast.key} msg={toast.msg} type={toast.type} onDone={() => setToast(null)}/>}
 
+      {/* ── Sidebar ──────────────────────────────────────── */}
       <div style={S.sidebar}>
-        <div style={{padding:'28px 22px 22px',borderBottom:`1px solid ${C.border}`}}>
-          <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
-            <div style={{width:'42px',height:'42px',borderRadius:'12px',background:`linear-gradient(135deg,${C.violet},${C.gold})`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1.3rem'}}>⚽</div>
+
+        {/* Logo */}
+        <div style={{padding:'28px 22px 22px', borderBottom:`1px solid ${C.border}`}}>
+          <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
+            <div style={{width:'42px', height:'42px', borderRadius:'12px', background:`linear-gradient(135deg,${C.violet},${C.gold})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.3rem'}}>
+              ⚽
+            </div>
             <div>
-              <div style={{fontFamily:C.serif,fontSize:'0.95rem',color:C.ivory,fontWeight:700}}>Golden Rock FC</div>
-              <div style={{fontFamily:C.mono,fontSize:'0.65rem',color:C.gold,letterSpacing:'0.12em'}}>ADMIN PORTAL</div>
+              <div style={{fontFamily:C.serif, fontSize:'0.95rem', color:C.ivory, fontWeight:700}}>Golden Rock FC</div>
+              <div style={{fontFamily:C.mono, fontSize:'0.65rem', color:C.gold, letterSpacing:'0.12em'}}>ADMIN PORTAL</div>
             </div>
           </div>
         </div>
-        <nav style={{flex:1,padding:'18px 14px',overflow:'auto'}}>
-          {NAV.map(n=>(
-            <button key={n.id} onClick={()=>setSection(n.id)}
-              style={{width:'100%',display:'flex',alignItems:'center',gap:'12px',padding:'12px 14px',borderRadius:'10px',marginBottom:'5px',background:section===n.id?'rgba(201,152,10,0.12)':'transparent',border:section===n.id?`1px solid ${C.borderBr}`:'1px solid transparent',color:section===n.id?C.gold:C.ivoryD,fontSize:'0.95rem',cursor:'pointer',textAlign:'left',transition:'all 0.15s',fontWeight:section===n.id?600:400}}
-              onMouseEnter={e=>{if(section!==n.id)e.currentTarget.style.background='rgba(255,255,255,0.04)';}}
-              onMouseLeave={e=>{if(section!==n.id)e.currentTarget.style.background='transparent';}}
+
+        {/* Nav links */}
+        <nav style={{flex:1, padding:'18px 14px', overflow:'auto'}}>
+          {NAV.map(n => (
+            <button
+              key={n.id}
+              onClick={() => setSection(n.id)}
+              style={{
+                width:'100%', display:'flex', alignItems:'center', gap:'12px',
+                padding:'12px 14px', borderRadius:'10px', marginBottom:'5px',
+                background: section===n.id ? 'rgba(201,152,10,0.12)' : 'transparent',
+                border:     section===n.id ? `1px solid ${C.borderBr}` : '1px solid transparent',
+                color:      section===n.id ? C.gold : C.ivoryD,
+                fontSize:'0.95rem', cursor:'pointer', textAlign:'left',
+                transition:'all 0.15s', fontWeight: section===n.id ? 600 : 400,
+              }}
+              onMouseEnter={e => { if (section!==n.id) e.currentTarget.style.background='rgba(255,255,255,0.04)'; }}
+              onMouseLeave={e => { if (section!==n.id) e.currentTarget.style.background='transparent'; }}
             >
-              <span style={{fontSize:'1.1rem'}}>{n.icon}</span><span>{n.label}</span>
+              <span style={{fontSize:'1.1rem'}}>{n.icon}</span>
+              <span>{n.label}</span>
             </button>
           ))}
         </nav>
-        <div style={{padding:'18px',borderTop:`1px solid ${C.border}`}}>
-          <a href="/" style={{display:'flex',alignItems:'center',gap:'10px',color:C.muted,textDecoration:'none',fontSize:'0.88rem',fontFamily:C.mono}}>← Public Site</a>
+
+        {/* Footer — user info + logout */}
+        <div style={{padding:'18px', borderTop:`1px solid ${C.border}`}}>
+
+          {/* Logged-in user */}
+          {authUser && (
+            <div style={{
+              marginBottom:'14px', padding:'12px',
+              background:'rgba(201,152,10,0.06)',
+              border:`1px solid rgba(201,152,10,0.2)`,
+              borderRadius:'10px'
+            }}>
+              <div style={{fontFamily:C.mono, fontSize:'0.6rem', color:C.gold, letterSpacing:'0.12em', marginBottom:'4px'}}>
+                LOGGED IN AS
+              </div>
+              <div style={{fontSize:'0.82rem', color:C.ivory, fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+                {authUser.email}
+              </div>
+            </div>
+          )}
+
+          {/* Public site link */}
+          <a
+            href="/"
+            style={{display:'flex', alignItems:'center', gap:'10px', color:C.muted, textDecoration:'none', fontSize:'0.88rem', fontFamily:C.mono, marginBottom:'10px'}}
+          >
+            ← Public Site
+          </a>
+
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            style={{
+              width:'100%', display:'flex', alignItems:'center', gap:'10px',
+              padding:'10px 14px', borderRadius:'9px',
+              background:'rgba(248,113,113,0.08)',
+              border:'1px solid rgba(248,113,113,0.25)',
+              color:'#f87171', fontSize:'0.88rem', cursor:'pointer',
+              fontFamily:C.mono, transition:'all 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background='rgba(248,113,113,0.15)'}
+            onMouseLeave={e => e.currentTarget.style.background='rgba(248,113,113,0.08)'}
+          >
+            🚪 Logout
+          </button>
         </div>
       </div>
 
+      {/* ── Main content ─────────────────────────────────── */}
       <main style={S.main}>
-        {section==='teams'       && <TeamsSection       {...props}/>}
-        {section==='players'     && <PlayersSection     {...props}/>}
-        {section==='matches'     && <MatchesSection     {...props}/>}
-        {section==='tournaments' && <TournamentsSection {...props}/>}
-        {section==='club'        && <ClubSection        {...props}/>}
+        {section==='teams'        && <TeamsSection       {...props}/>}
+        {section==='players'      && <PlayersSection     {...props}/>}
+        {section==='matches'      && <MatchesSection     {...props}/>}
+        {section==='tournaments'  && <TournamentsSection {...props}/>}
+        {section==='club'         && <ClubSection        {...props}/>}
       </main>
     </div>
   );

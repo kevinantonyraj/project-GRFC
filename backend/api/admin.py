@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     Team, Player, Match, Goal, MatchAppearance,
     DailyEntry, Tournament, TournamentTeam,
-    TournamentSquad, Staff, Partner
+    TournamentSquad, Staff, Partner,PortalUser
 )
 
 
@@ -77,3 +77,15 @@ class StaffAdmin(admin.ModelAdmin):
 class PartnerAdmin(admin.ModelAdmin):
     list_display  = ['name', 'initials', 'last_met']
     ordering      = ['-last_met']
+
+
+
+
+@admin.register(PortalUser)
+class PortalUserAdmin(admin.ModelAdmin):
+    list_display = ('email', 'full_name', 'is_active', 'created_at')
+
+    def save_model(self, request, obj, form, change):
+        if not obj.password.startswith('pbkdf2_'):
+            obj.set_password(obj.password)
+        super().save_model(request, obj, form, change)
