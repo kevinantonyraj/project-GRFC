@@ -13,8 +13,10 @@ from rest_framework.response   import Response
 from django.shortcuts          import get_object_or_404
 from django.utils.dateparse   import parse_datetime
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
-from datetime import timedelta
-from .models import PortalUser
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.exceptions import AuthenticationFailed
+
+
 
 
 
@@ -92,7 +94,6 @@ def team_list_create(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
-@permission_classes([IsAuthenticated])
 def team_detail(request, pk):
     team = get_object_or_404(Team, pk=pk)
     if request.method == 'GET':
@@ -111,7 +112,6 @@ def team_detail(request, pk):
 #  PLAYERS
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def player_list_create(request):
     if request.method == 'GET':
@@ -144,7 +144,6 @@ def player_detail(request, pk):
 #  before passing to Match.objects.create()
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def match_list_create(request):
     if request.method == 'GET':
@@ -213,7 +212,6 @@ def match_list_create(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
-@permission_classes([IsAuthenticated])
 def match_detail(request, pk):
     match = get_object_or_404(Match, pk=pk)
     if request.method == 'GET':
@@ -243,7 +241,6 @@ def match_detail(request, pk):
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-@permission_classes([IsAuthenticated])
 def goal_list_create(request):
     match_id = request.query_params.get('match_id')
     if request.method == 'GET':
@@ -271,7 +268,6 @@ def goal_list_create(request):
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-@permission_classes([IsAuthenticated])
 def goal_delete(request, pk):
     get_object_or_404(Goal, pk=pk).delete()
     return ok(msg='Goal deleted')
@@ -281,7 +277,6 @@ def goal_delete(request, pk):
 #  APPEARANCES
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def appearance_list_create(request):
     match_id = request.query_params.get('match_id')
@@ -316,7 +311,6 @@ def appearance_list_create(request):
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-@permission_classes([IsAuthenticated])
 def appearance_delete(request, pk):
     get_object_or_404(MatchAppearance, pk=pk).delete()
     return ok(msg='Appearance deleted')
@@ -326,7 +320,6 @@ def appearance_delete(request, pk):
 #  DAILY ENTRY
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def daily_entry_manage(request):
     if request.method == 'GET':
@@ -372,7 +365,6 @@ def daily_entry_manage(request):
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-@permission_classes([IsAuthenticated])
 def daily_entry_delete(request, pk):
     get_object_or_404(DailyEntry, pk=pk).delete()
     return ok(msg='Daily entry deleted')
@@ -382,7 +374,6 @@ def daily_entry_delete(request, pk):
 #  TOURNAMENTS
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def tournament_list_create(request):
     if request.method == 'GET':
@@ -395,7 +386,6 @@ def tournament_list_create(request):
     return err(str(s.errors))
 
 @api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def tournament_detail_manage(request, pk):
     t = get_object_or_404(Tournament, pk=pk)
@@ -411,7 +401,6 @@ def tournament_detail_manage(request, pk):
     return ok(msg='Tournament deleted')
 
 @api_view(['POST', 'DELETE'])
-@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def tournament_squad_manage(request):
     if request.method == 'POST':
@@ -433,7 +422,6 @@ def tournament_squad_manage(request):
         return err(str(e))
 
 @api_view(['POST', 'DELETE'])
-@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def tournament_team_manage(request):
     if request.method == 'POST':
@@ -461,7 +449,6 @@ def tournament_team_manage(request):
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-@permission_classes([IsAuthenticated])
 def staff_list_create(request):
     if request.method == 'GET':
         return ok(StaffSerializer(Staff.objects.all(), many=True).data)
@@ -472,7 +459,6 @@ def staff_list_create(request):
     return err(str(s.errors))
 
 @api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def staff_detail(request, pk):
     staff = get_object_or_404(Staff, pk=pk)
@@ -493,7 +479,6 @@ def staff_detail(request, pk):
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-@permission_classes([IsAuthenticated])
 def partner_list_create(request):
     if request.method == 'GET':
         return ok(PartnerSerializer(Partner.objects.all().order_by('-last_met'), many=True).data)
@@ -504,7 +489,6 @@ def partner_list_create(request):
     return err(str(s.errors))
 
 @api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([IsAuthenticated])
 @permission_classes([IsAuthenticated])
 def partner_detail(request, pk):
     partner = get_object_or_404(Partner, pk=pk)
@@ -534,7 +518,6 @@ ASSET_OPTIONS = [
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-@permission_classes([IsAuthenticated])
 def asset_list_create(request):
     if request.method == 'GET':
         return ok(ClubAssetSerializer(ClubAsset.objects.all(), many=True).data)
@@ -562,7 +545,6 @@ def asset_list_create(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
-@permission_classes([IsAuthenticated])
 def asset_detail(request, pk):
     asset = get_object_or_404(ClubAsset, pk=pk)
     if request.method == 'GET':
@@ -584,95 +566,86 @@ def asset_detail(request, pk):
 #  AUTH — Login, Verify, Logout
 # ═══════════════════════════════════════════════════════════
 
-
 @api_view(['POST'])
 def admin_login(request):
-    email = request.data.get('email', '').strip().lower()
+    """
+    Accepts { email, password }.
+    Checks against Django User table.
+    Returns JWT access + refresh tokens on success.
+    """
+    email    = request.data.get('email', '').strip().lower()
     password = request.data.get('password', '')
 
     if not email or not password:
-        return err('Email and password required', 400)
+        return err('Email and password are required', 400)
 
+    # Django auth uses username — look up user by email first
     try:
-        user = PortalUser.objects.get(email__iexact=email)
-    except PortalUser.DoesNotExist:
+        user = User.objects.get(email__iexact=email)
+    except User.DoesNotExist:
+        return err('Invalid credentials', 401)
+
+    # Check password and active status
+    user = authenticate(username=user.username, password=password)
+    if user is None:
         return err('Invalid credentials', 401)
 
     if not user.is_active:
-        return err('Account disabled', 403)
+        return err('Account is disabled', 403)
 
-    if not user.check_password(password):
-        return err('Invalid credentials', 401)
+    if not user.is_staff:
+        return err('Access denied — admin accounts only', 403)
 
-    # Proper refresh token
+    # Generate JWT tokens
     refresh = RefreshToken.for_user(user)
-
-    # Custom claims
-    refresh['portal_user_id'] = user.id
-    refresh['email'] = user.email
-
-    access = refresh.access_token
-    access['portal_user_id'] = user.id
-    access['email'] = user.email
-
-    # Expiry
-    access.set_exp(lifetime=timedelta(hours=8))
-    refresh.set_exp(lifetime=timedelta(days=7))
-
     return ok({
-        'access': str(access),
+        'access':  str(refresh.access_token),
         'refresh': str(refresh),
         'user': {
-            'email': user.email,
-            'full_name': user.full_name
+            'email':      user.email,
+            'username':   user.username,
+            'first_name': user.first_name,
+            'last_name':  user.last_name,
         }
     }, 'Login successful')
 
 
 @api_view(['GET'])
 def admin_verify(request):
+    """
+    Verifies the JWT token sent in Authorization header.
+    Returns user info if valid, 401 if not.
+    Used by adminportal.jsx on every page load.
+    """
+    
+
     try:
-        auth_header = request.headers.get('Authorization')
-
-        if not auth_header:
-            return err('No token', 401)
-
-        if not auth_header.startswith('Bearer '):
-            return err('Invalid header', 401)
-
-        token = auth_header.split(' ')[1]
-
-        decoded = AccessToken(token)
-
-        user_id = decoded.get('portal_user_id')
-
-        if not user_id:
-            return err('Invalid token payload', 401)
-
-        user = PortalUser.objects.get(id=user_id, is_active=True)
-
+        auth = JWTAuthentication()
+        result = auth.authenticate(request)
+        if result is None:
+            return err('No token provided', 401)
+        user, token = result
+        if not user.is_active or not user.is_staff:
+            return err('Access denied', 403)
         return ok({
-            'email': user.email,
-            'full_name': user.full_name
-        }, 'Valid')
-
-    except PortalUser.DoesNotExist:
-        return err('User not found', 401)
-
-    except Exception as e:
-        return err(str(e), 401)
+            'email':      user.email,
+            'username':   user.username,
+            'first_name': user.first_name,
+        }, 'Token valid')
+    except Exception:
+        return err('Invalid or expired token', 401)
 
 
 @api_view(['POST'])
 def admin_logout(request):
+    """
+    Blacklists the refresh token so it cannot be reused.
+    """
     try:
         refresh_token = request.data.get('refresh')
-
         if refresh_token:
             token = RefreshToken(refresh_token)
             token.blacklist()
-
-        return ok(msg='Logged out')
-
+        return ok(msg='Logged out successfully')
     except Exception:
         return ok(msg='Logged out')
