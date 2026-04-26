@@ -79,13 +79,3 @@ class PartnerAdmin(admin.ModelAdmin):
     ordering      = ['-last_met']
 
 
-
-
-@admin.register(PortalUser)
-class PortalUserAdmin(admin.ModelAdmin):
-    list_display = ('email', 'full_name', 'is_active', 'created_at')
-
-    def save_model(self, request, obj, form, change):
-        if not obj.password.startswith('pbkdf2_'):
-            obj.set_password(obj.password)
-        super().save_model(request, obj, form, change)
