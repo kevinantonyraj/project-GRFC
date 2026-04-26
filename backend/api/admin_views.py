@@ -15,9 +15,7 @@ from django.utils.dateparse   import parse_datetime
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.exceptions import AuthenticationFailed
-
-
-
+from django.contrib.auth.models import User
 
 
 from .models import (
