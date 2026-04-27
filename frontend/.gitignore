@@ -11,11 +11,11 @@ node_modules
 dist
 dist-ssr
 *.local
-
-../backend/grfcvenv
-../backend/api/__pycache__
-../backend/api/migrations/__pycache__
-../backend/core/__pycache__
+#
+#../backend/grfcvenv
+#../backend/api/__pycache__
+#../backend/api/migrations/__pycache__
+#../backend/core/__pycache__
 
 # Editor directories and files
 .vscode/*
