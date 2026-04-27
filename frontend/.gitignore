@@ -7,9 +7,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-../backend/grfcvenv
-../backend/api/__pycache__
-../backend/api/migrations/__pycache__
+#../backend/grfcvenv
+#../backend/api/__pycache__
+#../backend/api/migrations/__pycache__
 
 node_modules
 dist
