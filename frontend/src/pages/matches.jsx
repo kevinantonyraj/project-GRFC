@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Navbar  from '../components/Navbar.jsx';
 import Footer  from '../components/Footer.jsx';
-import { api } from '../../../backend/api/api.js';
+import { api } from '../utils/api.js';
 import '../assets/css/global.css';
 import '../assets/css/matches.css';
 import useTilt       from '../hooks/useTilt';
 import usePageLoader from '../hooks/usePageLoader';
+
+import calender from '../assets/icons/calendar.svg';
+import location from '../assets/icons/location.png';
 
 const FILTERS = [
   { label:'All',           value:'all'        },
@@ -83,11 +86,12 @@ const MatchRow = ({ match, index }) => {
 
       <div className="match-row-footer">
         <span>
-          📅 {new Date(match.date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}
+          <img src={calender} width="15" height="15" alt="calendar" />{' '}
+          {new Date(match.date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}
           {' · '}
           {new Date(match.date).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' })}
         </span>
-        <span>📍 {match.venue}</span>
+        <span><img src={location} width="15" height="15" alt="location" />{' '}{match.venue}</span>
         {match.match_type === 'internal'   && <span className="badge badge-violet">⚡ Internal</span>}
         {match.match_type === 'external'   && <span className="badge badge-gold">🏟 External</span>}
         {match.match_type === 'friendly'   && <span className="badge badge-win">🤝 Friendly</span>}

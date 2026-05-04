@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { api } from '../../../backend/api/api.js';
+import { api } from '../utils/api.js';
 import "../assets/css/home.css";
 import Footer from '../components/Footer.jsx';
 import Navbar from '../components/Navbar.jsx';
@@ -9,6 +9,8 @@ import useProgressBar     from '../hooks/useProgressBar';
 import useTilt            from '../hooks/useTilt';
 import usePageLoader      from '../hooks/usePageLoader';
 
+import location from '../assets/icons/location.png';
+import calender from '../assets/icons/calendar.svg';
 
 /* ── Slideshow data ──────────────────────────────────────── */
 const SLIDES = [
@@ -311,8 +313,16 @@ export default function Home() {
           </div>
 
           <div className="hero-content" ref={heroContentRef}>
-            <div className="hero-text">
-              <span className="hero-est animate-fade-up">EST. 2008 · THUNDER CITY, TC</span>
+            <div className="hero-text" style={{
+                width: 'fit-content', 
+                background: 'rgba(255,255,255,0.08)',
+                backdropFilter: 'blur(5px)',
+                WebkitBackdropFilter: 'blur(5px)',
+                padding: '30px',
+                borderRadius: '20px',
+                border: '1px solid rgba(255,255,255,0.12)'
+              }}>
+              
               <h1 className="hero-title">
                 <span className="hero-title-line1 animate-fade-up" style={{ animationDelay: '0.1s' }}>GOLDEN</span>
                 <span className="hero-title-line2 animate-fade-up" style={{ animationDelay: '0.2s' }}>ROCK FC</span>
@@ -334,8 +344,8 @@ export default function Home() {
         <section className="section stats-section">
           <div className="stats-grid">
             {STATS.map(({ icon, count, label, delay }) => (
-              <div key={label} className="stat-card tilt-card" data-reveal data-delay={delay}>
-                <span className="stat-icon">{icon}</span>
+              <div key={label} className="stat-card tilt-card" data-reveal data-delay={delay} style={{ height: '150px' }}>
+                <span className="stat-icon"></span>
                 {loading
                   ? <Skeleton height="40px" width="80px" style={{ margin: '8px auto' }} />
                   : <span className="stat-number" data-count={count}>{count}</span>
@@ -377,8 +387,8 @@ export default function Home() {
                 <>
                   
                   <div className="match-meta">
-                    <span>📅 {new Date(lastMatch.date).toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'short', year:'numeric' })}</span>
-                    <span>📍 {lastMatch.venue}</span>
+                    <span><img src={calender} width="15" height="15" alt="calendar" /> {new Date(lastMatch.date).toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'short', year:'numeric' })}</span>
+                    <span><img src={location} width="15" height="15" alt="location" /> {lastMatch.venue}</span>
                     <span className={`badge badge-${lastMatch.result}`}>{lastMatch.result.toUpperCase()}</span>
 
                     {lastMatch.match_type === 'internal'   && <span className="badge badge-violet">⚡ Internal</span>}
@@ -497,29 +507,7 @@ export default function Home() {
 
         <div className="divider" />
 
-        {/* ══ SEASON SNAPSHOT ═══════════════════════════════ */}
-        <section className="section snapshot-section">
-          <div data-reveal>
-            <span className="section-eyebrow">Season 2024/25</span>
-            <h2 className="section-title">Season <span>Snapshot</span></h2>
-          </div>
-          <div className="snapshot-grid">
-            {SNAPSHOT_DATA.map(({ label, count, width, delay, suffix }) => (
-              <div key={label} className="snapshot-item" data-reveal data-delay={delay}>
-                <div className="snapshot-label">{label}</div>
-                <div className="snapshot-value">
-                  {loading
-                    ? <Skeleton height="36px" width="60px" />
-                    : <><span data-count={count}>{count}</span>{suffix}</>
-                  }
-                </div>
-                <div className="progress-bar">
-                  <div className="progress-fill" data-width={width} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+        
 
       </div>
       <Footer />

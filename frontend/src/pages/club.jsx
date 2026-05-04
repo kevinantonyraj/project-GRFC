@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import Navbar  from '../components/Navbar.jsx';
 import Footer  from '../components/Footer.jsx';
-import { api } from '../../../backend/api/api.js';
+import { api } from '../utils/api.js';
 import '../assets/css/global.css';
 import '../assets/css/club.css';
 import useCounterAnimation from '../hooks/useCounterAnimation';
 import useTilt             from '../hooks/useTilt';
 import usePageLoader       from '../hooks/usePageLoader';
 
+import calender from '../assets/icons/calendar.svg';
+import whatsappIcon from '../assets/icons/whatsapp.avif';
 const TRAINING = [
   { day:'Monday',    desc:'Tactical & Strategy',   time:'18:00 – 20:00' },
-  { day:'Wednesday', desc:'Physical Conditioning', time:'17:30 – 19:30' },
-  { day:'Friday',    desc:'Set Pieces & Drills',   time:'18:00 – 20:00' },
+  { day:'Tuesday',   desc:'Tactical & Strategy',   time:'18:00 – 20:00' },
+  
+  { day:'Saturday',  desc:'Match Simulation',      time:'10:00 – 12:00' },
 ];
 
 const IDENTITY = [
@@ -220,19 +223,32 @@ export default function Club() {
                 <h3>Leadership &amp; Experience</h3>
                 <p>Coach Sterling brings 15+ years of professional coaching experience, including a UEFA 'A' License. He joined Golden Rock FC in 2018 and has since led us to two regional championships.</p>
                 <div className="training-schedule">
-                  <h4>🗓️ Weekly Training Schedule</h4>
-                  {TRAINING.map(({ day, desc, time }) => (
-                    <div className="training-item" key={day}>
-                      <div><strong>{day}</strong><span>{desc}</span></div>
-                      <span className="training-time">{time}</span>
-                    </div>
-                  ))}
+                  <h4><img src={calender} width="15" height="15" alt="calendar" /> Weekly Training Schedule</h4>
+                  <div className="training-flow">
+
+  <div className="training-card">
+    <strong>Monday – Friday</strong>
+    <span>Tactical & Strategy</span>
+    <small>18:00 – 20:00</small>
+  </div>
+
+  <div className="training-arrow">
+    →
+  </div>
+
+  <div className="training-card">
+    <strong>Saturday</strong>
+    <span>Match Simulation</span>
+    <small>10:00 – 12:00</small>
+  </div>
+
+</div>
                 </div>
               </div>
             </div>
 
             <div className="club-identity card tilt-card" data-reveal data-delay="120">
-              <h3>🔐 Club Identity</h3>
+              <h3> Club Identity</h3>
               <p style={{ fontSize:'0.82rem', color:'var(--text-muted)', marginBottom:'20px' }}>Foundational details of Golden Rock FC</p>
               {IDENTITY.map(({ icon, label, value, sub }) => (
                 <div className="identity-item" key={label}>
@@ -246,8 +262,9 @@ export default function Club() {
                   </div>
                 </div>
               ))}
-              <a href="https://wa.me/1234567890" target="_blank" rel="noreferrer" className="btn btn-primary" style={{ width:'100%', justifyContent:'center', marginTop:'24px' }}>
-                💬 Connect on WhatsApp
+              <a href="https://wa.me/8220022985" target="_blank" rel="noreferrer" className="btn btn-primary" style={{ width:'100%', justifyContent:'center', marginTop:'24px' }}>
+                <img src={whatsappIcon} width="20" height="20" alt="whatsapp" />
+                 Connect on WhatsApp
               </a>
             </div>
           </div>

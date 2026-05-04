@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Navbar  from '../components/Navbar.jsx';
 import Footer  from '../components/Footer.jsx';
-import { api } from '../../../backend/api/api.js';
+import { api } from '../utils/api.js';
 import '../assets/css/global.css';
 import '../assets/css/players.css';
 import useCounterAnimation from '../hooks/useCounterAnimation';
 import useTilt             from '../hooks/useTilt';
 import usePageLoader       from '../hooks/usePageLoader';
 
-const useFloatCounter = () => {
+const useFloatCounter = (deps = []) => {
   useEffect(() => {
     const els = document.querySelectorAll('[data-count-float]');
     const obs = new IntersectionObserver(entries => {
@@ -26,7 +26,7 @@ const useFloatCounter = () => {
     }, { threshold:0.5 });
     els.forEach(el => obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, deps);
 };
 
 const useRepeatReveal = (deps = []) => {
@@ -117,7 +117,7 @@ const HonoursCard = ({ title, badge, items, statKey, statLabel, loading }) => {
    PLAYERS COMPONENT
 ═══════════════════════════════════════════════════════════ */
 export default function Players() {
-  usePageLoader();  useCounterAnimation(); useFloatCounter(); useTilt();
+  usePageLoader();    useTilt();
 
   const [players,     setPlayers]     = useState([]);
   const [allPlayers,  setAllPlayers]  = useState([]); // unfiltered for search
@@ -130,7 +130,26 @@ export default function Players() {
   const [loadState,   setLoadState]   = useState('idle');
   const searchRef = useRef(null);
 
+  useCounterAnimation([players, honours, snapshot]);
+  
   useRepeatReveal([players]);
+  useFloatCounter([snapshot]);
+  
+// Add this inside the Players component, after all other hooks:
+useEffect(() => {
+  if (loading || players.length === 0) return;
+
+  // Small delay to ensure DOM has updated after React render
+  const timer = setTimeout(() => {
+    document.querySelectorAll('[data-assist-count]').forEach(el => {
+      const target = parseInt(el.dataset.assistCount, 10) || 0;
+      el.textContent = target; // just set directly, no animation needed
+    });
+  }, 200);
+
+  return () => clearTimeout(timer);
+}, [loading, players]);
+
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -197,7 +216,7 @@ export default function Players() {
             />
             <HonoursCard
               title="⭐ MAN OF THE MATCH"
-              badge="Elite Performance"
+              badge=""
               items={honours.top_motm}
               statKey="total_motm"
               statLabel="AWARDS"
@@ -216,7 +235,7 @@ export default function Players() {
 
             {/* Search bar */}
             <div style={{ position:'relative', minWidth:'240px' }}>
-              <span style={{ position:'absolute', left:'12px', top:'50%', transform:'translateY(-50%)', color:'var(--text-muted)', fontSize:'0.9rem' }}>🔍</span>
+              
               <input
                 ref={searchRef}
                 type="text"
@@ -278,9 +297,9 @@ export default function Players() {
                   <span className="player-number">#{p.number}</span>
                   {p.role_tag && <span className={`player-role-tag${p.is_featured ? ' gold-tag' : ''}`}>{p.role_tag}</span>}
                   <div className="player-stats-row">
-                    <div><span data-count={p.total_appearances||0}>0</span><small>APP</small></div>
-                    <div><span data-count={p.total_goals||0}>0</span><small>GLS</small></div>
-                    <div><span data-count={p.total_assists||0}>0</span><small>AST</small></div>
+                    <div><span >{p.total_appearances||0}</span><small>MAT</small></div>
+                    <div><span >{p.total_goals||0}</span><small>GLS</small></div>
+                    <div><span data-assist-count={p.total_assists||0}>{p.total_assists||0}</span><small>AST</small></div>
                   </div>
                 </a>
               ))
@@ -313,27 +332,7 @@ export default function Players() {
             </div>
           )}
 
-          {/* Season Stats Strip */}
-          <div className="season-stats-strip" data-reveal>
-            <div className="season-stat">
-              <span className="season-stat-icon">⚡</span>
-              <span className="stat-number" data-count-float={goalsPerGame}>0</span>
-              <span className="stat-label">Goals Per Game Avg</span>
-            </div>
-            <div className="season-stat-div"/>
-            <div className="season-stat">
-              <span className="season-stat-icon">🧤</span>
-              <span className="stat-number" data-count={snapshot?.clean_sheets||0}>0</span>
-              <span className="stat-label">Clean Sheets Overall</span>
-            </div>
-            <div className="season-stat-div"/>
-            <div className="season-stat">
-              <span className="season-stat-icon">📈</span>
-              <span className="stat-number" data-count={snapshot?.win_rate||0}>0</span>
-              <small style={{ fontFamily:'var(--font-display)', fontSize:'2rem', color:'var(--gold)' }}>%</small>
-              <span className="stat-label">Season Win Rate</span>
-            </div>
-          </div>
+          
 
         </section>
       </div>

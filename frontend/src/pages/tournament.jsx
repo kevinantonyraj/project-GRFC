@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import Navbar  from '../components/Navbar.jsx';
 import Footer  from '../components/Footer.jsx';
-import { api } from '../../../backend/api/api.js';
+import { api } from '../utils/api.js';
 import '../assets/css/global.css';
 import '../assets/css/tournaments.css';
 import useCounterAnimation from '../hooks/useCounterAnimation';
 import useTilt             from '../hooks/useTilt';
 import usePageLoader       from '../hooks/usePageLoader';
+
+import calender from '../assets/icons/calendar.svg';
+import location from '../assets/icons/location.png';
 
 const FILTERS = [
   { label:'All',         value:'all'       },
@@ -45,7 +48,7 @@ const useRepeatReveal = (deps = []) => {
 };
 
 export default function Tournaments() {
-  usePageLoader();  useCounterAnimation(); useTilt();
+  usePageLoader();  ; useTilt();
 
   const [tournaments,  setTournaments]  = useState([]);
   const [partners,     setPartners]     = useState([]);
@@ -55,6 +58,7 @@ export default function Tournaments() {
   const [activeFilter, setActiveFilter] = useState('all');
 
   useRepeatReveal([tournaments]);
+  useCounterAnimation([tournaments, totalTitles]);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -139,7 +143,7 @@ export default function Tournaments() {
                       {t.result === 'champions' && <span className="tc-trophy">🏆</span>}
                     </div>
                     <h3 className="tc-title">{t.name}</h3>
-                    <div className="tc-dates">📅 {t.dates} · 📍 {t.venue}</div>
+                    <div className="tc-dates"><img src={calender} width="15" height="15" alt="calendar" /> {t.dates} · <img src={location} width="15" height="15" alt="location" /> {t.venue}</div>
                     <div className="tc-stats">
                       <div><span data-count={t.total_teams}>0</span><small>Teams</small></div>
                       <div><span data-count={t.total_matches}>0</span><small>Matches</small></div>
@@ -159,7 +163,7 @@ export default function Tournaments() {
                     <a
                       href={`/tournament/${t.id}`}
                       className="btn btn-outline"
-                      style={{ width:'100%', justifyContent:'center', marginTop:'12px' }}
+                      style={{ width:'90%', justifyContent:'center', marginTop:'12px' }}
                     >
                       View Tournament Details →
                     </a>

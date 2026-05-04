@@ -5,6 +5,58 @@
 /* Leadership Grid */
 .leadership-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; margin-bottom: 0; }
 
+
+.training-flow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-top:16px;
+  flex-wrap:wrap;
+}
+
+.training-card{
+  flex:1;
+  min-width:180px;
+  padding:16px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.training-card strong{
+  color:var(--gold);
+  font-size:0.9rem;
+}
+
+.training-card span{
+  color:var(--ivory);
+  font-size:0.82rem;
+}
+
+.training-card small{
+  color:var(--text-muted);
+}
+
+.training-arrow{
+  font-size:1.6rem;
+  color:var(--gold);
+  font-weight:bold;
+}
+
+.assets-grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 24px;
+  width: 100%;
+  margin-top: 24px;
+}
+
+
+
 /* Coach Card */
 .coach-card { padding: 0; overflow: hidden; display: grid; grid-template-columns: 200px 1fr; }
 .coach-image-frame {

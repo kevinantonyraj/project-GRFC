@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const useCounterAnimation = () => {
+const useCounterAnimation = (deps = []) => {
   useEffect(() => {
     const counters = document.querySelectorAll('[data-count]');
     const obs = new IntersectionObserver(
@@ -26,7 +26,7 @@ const useCounterAnimation = () => {
     );
     counters.forEach((el) => obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, deps);
 };
 
 export default useCounterAnimation;

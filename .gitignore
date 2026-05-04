@@ -1,0 +1,38 @@
+# ===== BACKEND (Python/Django) =====
+backend/__pycache__/
+backend/api/__pycache__/
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/**/*.pyo
+backend/**/*.pyd
+
+# Django migrations (optional - some teams commit these)
+# backend/api/migrations/  ← only add if you don't want to track migrations
+
+# Virtual Environment
+backend/grfcvenv/
+
+# Django secret & environment
+backend/.env
+backend/*.env
+*.env
+
+# Node modules in backend (whatsapp_web.js dependencies)
+backend/node_modules/
+backend/package-lock.json
+
+# WWebJS cache and auth (sensitive WhatsApp session data!)
+backend/.wwebjs_auth/
+backend/.wwebjs_cache/
+
+# ===== FRONTEND (React/Vite) =====
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# ===== GENERAL =====
+.DS_Store
+Thumbs.db
+*.log

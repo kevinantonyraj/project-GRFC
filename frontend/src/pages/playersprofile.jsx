@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar  from '../components/Navbar.jsx';
 import Footer  from '../components/Footer.jsx';
-import { api } from '../../../backend/api/api.js';
+import { api } from '../utils/api.js';
 import '../assets/css/global.css';
 import '../assets/css/player-profile.css';
 import useCounterAnimation  from '../hooks/useCounterAnimation';
@@ -22,7 +22,7 @@ const Skeleton = ({ width = '100%', height = '20px', style = {} }) => (
 );
 
 /* ── Repeating Scroll Reveal ─────────────────────────────── */
-const useRepeatScrollReveal = () => {
+const useRepeatScrollReveal = (deps = []) => {
   useEffect(() => {
     const els = document.querySelectorAll('[data-reveal]');
     const obs = new IntersectionObserver(
@@ -40,7 +40,7 @@ const useRepeatScrollReveal = () => {
     );
     els.forEach(el => obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, deps);
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -50,8 +50,8 @@ export default function PlayerProfile() {
   const { id } = useParams(); // gets player ID from URL /player-profile/:id
 
   usePageLoader();
-  useRepeatScrollReveal();
-  useCounterAnimation();
+  
+  
   useProgressBar();
   useTilt();
 
@@ -59,6 +59,9 @@ export default function PlayerProfile() {
   const [data,    setData]    = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
+
+  useRepeatScrollReveal([data]);
+  useCounterAnimation([data]);
 
   useEffect(() => {
     const fetchPlayer = async () => {

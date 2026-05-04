@@ -17,6 +17,9 @@ from django.contrib.auth        import authenticate
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.exceptions import AuthenticationFailed
+
 from .models import (
     Team, Player, Match, Goal, MatchAppearance,
     DailyEntry, Tournament, TournamentTeam, TournamentSquad,
@@ -614,8 +617,7 @@ def admin_verify(request):
     Returns user info if valid, 401 if not.
     Used by adminportal.jsx on every page load.
     """
-    from rest_framework_simplejwt.authentication import JWTAuthentication
-    from rest_framework.exceptions import AuthenticationFailed
+
 
     try:
         auth = JWTAuthentication()

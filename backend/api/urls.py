@@ -42,4 +42,7 @@ urlpatterns = [
     path('auth/login/',   av.admin_login,   name='admin-login'),
     path('auth/verify/',  av.admin_verify,  name='admin-verify'),
     path('auth/logout/',  av.admin_logout,  name='admin-logout'),
+
+
+    path("send-whatsapp/", views.send_whatsapp),
 ]

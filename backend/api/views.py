@@ -1,8 +1,16 @@
+from urllib import response
+import requests
 from rest_framework.decorators import api_view
 from rest_framework.response   import Response
 from rest_framework            import status
 from django.db.models          import Count, Sum, Q
 from django.shortcuts          import get_object_or_404
+from django.db.models.functions import Coalesce
+from django.db.models import OuterRef, Subquery, IntegerField
+from datetime import datetime
+from .models import Match
+
+
 
 from .models import (
     Team, Player, Match, Goal, MatchAppearance,
@@ -63,23 +71,37 @@ def home_data(request):
 def daily_data(request, date=None):
     date = date or request.query_params.get('date', None)
 
-    if date:
-        entry = get_object_or_404(DailyEntry, date=date)
-    else:
-        entry = DailyEntry.objects.order_by('-date').first()
-        if not entry:
-            return Response(
-                {'detail': 'No daily entries found.'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
+    # ── All unique dates — deduplicated and sorted newest first ──
     all_dates = list(
-        DailyEntry.objects.order_by('-date').values_list('date', flat=True)
+        DailyEntry.objects
+        .order_by('-date')
+        .values_list('date', flat=True)
+        .distinct()   # ← removes duplicate dates
     )
 
+    if not all_dates:
+        return Response({
+            'entry':   [],
+            'all_dates': [],
+        })
+
+    # ── Pick which date to show ───────────────────────────────
+    if date:
+        target_date = date
+    else:
+        target_date = str(all_dates[0])   # most recent date
+
+    # ── Get ALL entries for that date (multiple matches allowed) ──
+    entries = DailyEntry.objects.filter(
+        date=target_date
+    ).select_related(
+        'match', 'match__home_team', 'match__away_team', 'motm_player'
+    ).order_by('match__date')   # order by kick-off time within the day
+
     return Response({
-        'entry':     DailyEntrySerializer(entry).data,
+        'entry':   DailyEntrySerializer(entries, many=True).data,
         'all_dates': [str(d) for d in all_dates],
+        'date':      target_date,
     })
 
 
@@ -115,11 +137,18 @@ def matches_list(request):
 def players_list(request):
     search = request.query_params.get('search', '').strip()
 
+    assist_subquery = MatchAppearance.objects.filter(
+        player=OuterRef('pk')
+    ).values('player').annotate(
+        total=Sum('assists')
+    ).values('total')
+
     players = Player.objects.filter(is_active=True).annotate(
         total_appearances=Count('appearances', distinct=True),
         total_goals=Count('goals', filter=Q(goals__is_own_goal=False), distinct=True),
-        total_assists=Sum('appearances__assists'),
+        total_assists=Coalesce(Subquery(assist_subquery, output_field=IntegerField()), 0),
     ).select_related('current_team').order_by('number')
+
 
     if search:
         players = players.filter(
@@ -310,3 +339,128 @@ def club_data(request):
         'partners': PartnerSerializer(partners, many=True).data,
         'assets':   ClubAssetSerializer(assets, many=True).data,
     })
+
+
+
+
+
+
+@api_view(['POST'])
+def send_whatsapp(request):
+    try:
+        data = request.data
+        match_id = data.get('id')
+
+        # Fetch fresh from DB with all related data
+        match = Match.objects.select_related(
+            'home_team', 'away_team'
+        ).prefetch_related(
+            'goals__player', 'goals__team',
+            'appearances__player', 'appearances__team'
+        ).get(id=match_id)
+
+        if match.match_type != 'internal':
+            return Response({"error": "Only internal matches allowed"}, status=400)
+
+        # --- Date formatting ---
+        date_str = match.date.strftime("%d %b %Y")
+
+        # --- Squad lists ---
+        home_appearances = match.appearances.filter(team=match.home_team)
+        away_appearances = match.appearances.filter(team=match.away_team)
+
+        def format_player(app):
+            tag = " ⭐" if app.is_motm else ""
+            sub = " (sub)" if app.is_substitute else ""
+            assists = f" — {app.assists}A" if app.assists > 0 else ""
+            return f"  • {app.player.name}{tag}{sub}{assists}"
+
+        home_squad = "\n".join(format_player(a) for a in home_appearances)
+        away_squad = "\n".join(format_player(a) for a in away_appearances)
+
+        if not home_squad:
+            home_squad = "  • Not recorded"
+        if not away_squad:
+            away_squad = "  • Not recorded"
+
+        # --- Goals ---
+        home_goals = match.goals.filter(team=match.home_team).order_by('minute')
+        away_goals = match.goals.filter(team=match.away_team).order_by('minute')
+
+        def format_goal(g):
+            og = " (OG)" if g.is_own_goal else ""
+            return f"  ⚽ {g.player.name}{og} {g.minute}'"
+
+        home_goals_text = "\n".join(format_goal(g) for g in home_goals)
+        away_goals_text = "\n".join(format_goal(g) for g in away_goals)
+
+        if not home_goals_text:
+            home_goals_text = "  • No goals"
+        if not away_goals_text:
+            away_goals_text = "  • No goals"
+
+        # --- MOTM ---
+        motm_appearance = match.appearances.filter(is_motm=True).first()
+        motm_name = motm_appearance.player.name if motm_appearance else "----"
+
+        # --- Assist leaders ---
+        top_assisters = match.appearances.filter(assists__gt=0).order_by('-assists')
+        if top_assisters.exists():
+            assist_text = "\n".join(
+                f"  • {a.player.name} — {a.assists} assist{'s' if a.assists > 1 else ''}"
+                for a in top_assisters
+            )
+        else:
+            assist_text = "  • Not recorded"
+
+        # --- Build message ---
+        message = f"""{date_str} MATCH RESULT
+
+{match.home_team.name} vs {match.away_team.name}
+{match.home_score} - {match.away_score}
+ 
+Goals — {match.home_team.name}:
+{home_goals_text}
+
+Goals — {match.away_team.name}:
+{away_goals_text}
+
+Assists:
+{assist_text}
+
+Team 1 Squad:
+{home_squad}
+
+Team 2 Squad:
+{away_squad}
+
+
+🔥 Man of the Match: {motm_name}
+"""
+
+        payload = {
+            "groupId": "120363426722567735@g.us",
+            "message": message
+        }
+
+        print("---- SENDING TO NODE ----")
+        response = requests.post(
+            "http://localhost:5001/send-group",
+            json=payload,
+            timeout=10
+        )
+        print("NODE RESPONSE:", response.status_code, repr(response.text))
+
+        return Response({
+            "success": True,
+            "node_status": response.status_code,
+            "node_response": response.text
+        })
+
+    except Match.DoesNotExist:
+        return Response({"error": "Match not found"}, status=404)
+    except requests.exceptions.ConnectionError:
+        return Response({"error": "Cannot reach WhatsApp service on port 5001"}, status=503)
+    except Exception as e:
+        print("ERROR:", str(e))
+        return Response({"error": str(e)}, status=500)

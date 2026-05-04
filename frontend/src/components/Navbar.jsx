@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logoIcon from '../assets/icons/grfc_icon.png'; 
 
 const NAV_LINKS = [
   { label: 'Home',        href: '/' },
@@ -85,7 +86,7 @@ const Navbar = () => {
       {/* Navbar */}
       <nav className={`navbar${scrolled ? ' scrolled' : ''}`}>
         <a href="/" className="nav-logo">
-          <div className="nav-logo-icon">⚽</div>
+          <img src={logoIcon} width="60" height="50" alt="Football" />
           <span className="nav-logo-text">Golden Rock FC</span>
         </a>
 
@@ -100,13 +101,6 @@ const Navbar = () => {
         </ul>
 
         <div className="nav-right">
-          <button
-            className="nav-search-btn"
-            aria-label="Search"
-            onClick={() => setSearchOpen(true)}
-          >
-            🔍
-          </button>
           <a href="/admin" className="btn-admin">Admin</a>
           <button
             className="hamburger"

@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar  from '../components/Navbar.jsx';
 import Footer  from '../components/Footer.jsx';
-import { api } from '../../../backend/api/api.js';
+import { api } from '../utils/api.js';
 import '../assets/css/global.css';
 import '../assets/css/tournaments.css';
 import useTilt       from '../hooks/useTilt';
 import usePageLoader from '../hooks/usePageLoader';
+
+import calender from '../assets/icons/calendar.svg';
+import location from '../assets/icons/location.png';
 
 const BADGE_CLS = { win:'badge-win', draw:'badge-draw', loss:'badge-loss' };
 
@@ -123,8 +126,8 @@ export default function TournamentDetail() {
                       {tournament.name}
                     </h1>
                     <div style={{ display:'flex', gap:'16px', flexWrap:'wrap', color:'var(--text-muted)', fontFamily:'var(--font-mono)', fontSize:'0.72rem' }}>
-                      <span>📅 {tournament.dates}</span>
-                      <span>📍 {tournament.venue}</span>
+                      <span><img src={calender} width="15" height="15" alt="calendar" /> {tournament.dates}</span>
+                      <span><img src={location} width="15" height="15" alt="location" /> {tournament.venue}</span>
                     </div>
                   </div>
 
@@ -239,10 +242,10 @@ export default function TournamentDetail() {
                           {/* Date + Expand */}
                           <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:'8px' }}>
                             <span style={{ fontFamily:'var(--font-mono)', fontSize:'0.68rem', color:'var(--text-muted)' }}>
-                              📅 {match.date}
+                              <img src={calender} width="15" height="15" alt="calendar" /> {match.date}
                             </span>
                             <span style={{ fontFamily:'var(--font-mono)', fontSize:'0.68rem', color:'var(--text-muted)' }}>
-                              📍 {match.venue}
+                              <img src={location} width="15" height="15" alt="location" /> {match.venue}
                             </span>
                             <button
                               className="match-expand-btn"

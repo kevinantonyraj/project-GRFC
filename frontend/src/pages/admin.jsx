@@ -3,9 +3,9 @@ import '../assets/css/global.css';
 import '../assets/css/admin.css';
 import usePageLoader from '../hooks/usePageLoader';
 import useTilt       from '../hooks/useTilt';
-import { authApi, saveTokens, getToken } from '../../../backend/api/auth.js';
+import { authApi, saveTokens, getToken } from '../utils/auth.js';
 
-/* ── Forgot Password Modal ───────────────────────────────── */
+/* ── Forgot Password Modal ───────────────────────────────── 
 const ForgotModal = ({ onClose }) => {
   const [sent, setSent] = useState(false);
 
@@ -41,7 +41,7 @@ const ForgotModal = ({ onClose }) => {
       </div>
     </div>
   );
-};
+};*/
 
 /* ═══════════════════════════════════════════════════════════
    ADMIN COMPONENT
@@ -53,7 +53,7 @@ export default function Admin() {
   const [email,      setEmail]      = useState('');
   const [password,   setPassword]   = useState('');
   const [showPw,     setShowPw]     = useState(false);
-  const [human,      setHuman]      = useState(false);
+  //const [human,      setHuman]      = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [passError,  setPassError]  = useState(false);
   const [feedback,   setFeedback]   = useState({ msg: '', cls: '' });
@@ -82,10 +82,10 @@ export default function Admin() {
     let valid = true;
     if (!email || !email.includes('@')) { setEmailError(true); valid = false; }
     if (!password || password.length < 6) { setPassError(true); valid = false; }
-    if (!human) {
+    /*if (!human) {
       setFeedback({ msg: '⚠ Please confirm you are not a robot.', cls: 'error' });
       return;
-    }
+    }*/
     if (!valid) return;
 
     setLoginState('loading');
@@ -129,7 +129,7 @@ export default function Admin() {
       </div>
       <div className="grid-lines" />
 
-      {forgotOpen && <ForgotModal onClose={() => setForgotOpen(false)} />}
+      
 
       <div className="admin-wrapper">
         <a href="/" className="admin-back-link">← Return to Public Website</a>
@@ -137,25 +137,20 @@ export default function Admin() {
         <div className={`admin-card card tilt-card${shake ? ' shake' : ''}`}>
           <div className="admin-accent-line" />
 
-          <div className="admin-logo-wrap">
-            <div className="admin-logo-icon">🛡️</div>
-            <div className="admin-logo-line" />
-          </div>
+          
 
           <h1 className="admin-title">ADMIN PORTAL</h1>
-          <p className="admin-subtitle">Authorized personnel only. Secure login required.</p>
-
           <div className="admin-form">
 
             {/* Email */}
             <div className="form-group">
-              <label className="form-label" htmlFor="adminEmail">Administrator Email</label>
+              <label className="form-label" htmlFor="adminEmail">Email</label>
               <div className="input-wrap">
-                <span className="input-icon">✉</span>
+                
                 <input
                   type="email"
                   id="adminEmail"
-                  placeholder="admin@goldenrockfc.com"
+                  
                   value={email}
                   onChange={e => { setEmail(e.target.value); setEmailError(false); }}
                   onKeyDown={handleKey}
@@ -167,41 +162,27 @@ export default function Admin() {
             {/* Password */}
             <div className="form-group">
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                <label className="form-label" htmlFor="adminPass">Security Password</label>
-                <button
-                  type="button"
-                  className="forgot-link"
-                  onClick={() => setForgotOpen(true)}
-                  style={{ background:'none', border:'none', cursor:'pointer' }}
-                >
-                  Forgot Password?
-                </button>
+                <label className="form-label" htmlFor="adminPass">Password</label>
+              
               </div>
               <div className="input-wrap">
-                <span className="input-icon">🔒</span>
+                
                 <input
                   type={showPw ? 'text' : 'password'}
                   id="adminPass"
-                  placeholder="••••••••"
+                  
                   value={password}
                   onChange={e => { setPassword(e.target.value); setPassError(false); }}
                   onKeyDown={handleKey}
                 />
                 <button className="pw-toggle" type="button" onClick={() => setShowPw(v => !v)}>
-                  {showPw ? '🙈' : '👁'}
+                  {showPw ? '👀' : '👁'}
                 </button>
               </div>
               {passError && <div className="input-error show">Password must be at least 6 characters.</div>}
             </div>
 
-            {/* Captcha */}
-            <div className="captcha-row">
-              <label className="captcha-label">
-                <input type="checkbox" checked={human} onChange={e => setHuman(e.target.checked)} />
-                {' '}I am not a robot
-              </label>
-              <span className="captcha-icon">🤖</span>
-            </div>
+            
 
             {/* Login Button */}
             <button
@@ -209,28 +190,16 @@ export default function Admin() {
               onClick={attemptLogin}
               disabled={loginState === 'loading'}
             >
-              {loginState === 'loading' ? '⏳ Authenticating…' : '🔐 Secure Login'}
+              {loginState === 'loading' ? ' Authenticating…' : ' LogIn'}
             </button>
 
             {feedback.msg && (
               <div className={`login-feedback ${feedback.cls}`}>{feedback.msg}</div>
             )}
 
-            <div className="security-badge">
-              <span>🛡️</span>
-              <span>END-TO-END ENCRYPTED SESSION</span>
-            </div>
+            
 
           </div>
-
-          <div className="admin-footer-info">
-            <p>OFFICIAL CLUB MANAGEMENT SYSTEM V2.4.0</p>
-            <p style={{ marginTop:'12px', fontSize:'0.75rem', lineHeight:1.7, color:'var(--text-muted)', maxWidth:'360px', textAlign:'center' }}>
-              Access to this system is restricted to authorized Golden Rock FC staff. All login
-              attempts are logged for security auditing purposes.
-            </p>
-          </div>
-
         </div>
       </div>
     </>
