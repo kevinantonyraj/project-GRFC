@@ -7,7 +7,7 @@ import '../assets/css/tournaments.css';
 import useCounterAnimation from '../hooks/useCounterAnimation';
 import useTilt             from '../hooks/useTilt';
 import usePageLoader       from '../hooks/usePageLoader';
-
+import { Link } from 'react-router-dom';
 import calender from '../assets/icons/calendar.svg';
 import location from '../assets/icons/location.png';
 
@@ -160,13 +160,13 @@ export default function Tournaments() {
                       </div>
                     )}
                     {/* View Details → goes to tournament detail page */}
-                    <a
-                      href={`/tournament/${t.id}`}
+                    <Link
+                      to={`/tournament/${t.id}`}
                       className="btn btn-outline"
                       style={{ width:'90%', justifyContent:'center', marginTop:'12px' }}
                     >
                       View Tournament Details →
-                    </a>
+                    </Link>
                   </div>
                 );
               })
@@ -201,7 +201,7 @@ export default function Tournaments() {
                     <strong>{p.name}</strong>
                     <span>Last met: {new Date(p.last_met).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}</span>
                   </div>
-                  <a href="#" className="btn btn-outline" style={{ padding:'6px 14px', fontSize:'0.65rem', marginLeft:'auto' }}>View</a>
+                  <Link to="#" className="btn btn-outline" style={{ padding:'6px 14px', fontSize:'0.65rem', marginLeft:'auto' }}>View</Link>
                 </div>
               ))
             ) : (

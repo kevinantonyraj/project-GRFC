@@ -109,7 +109,7 @@ export default function PlayerProfile() {
 
           {/* Breadcrumb */}
           <div className="breadcrumb" data-reveal>
-            <a href="/">Home</a> › <a href="/players">Players</a> ›{' '}
+            <Link to="/">Home</Link> › <Link to="/players">Players</Link> ›{' '}
             <span>{loading ? '...' : player?.name || 'Player'}</span>
           </div>
 

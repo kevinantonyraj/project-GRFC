@@ -7,6 +7,8 @@ import '../assets/css/players.css';
 import useCounterAnimation from '../hooks/useCounterAnimation';
 import useTilt             from '../hooks/useTilt';
 import usePageLoader       from '../hooks/usePageLoader';
+import { Link } from 'react-router-dom';
+
 
 const useFloatCounter = (deps = []) => {
   useEffect(() => {
@@ -283,9 +285,9 @@ useEffect(() => {
               ))
             ) : visiblePlayers.length > 0 ? (
               visiblePlayers.map((p, idx) => (
-                <a
+                <Link
                   key={p.id}
-                  href={`/player-profile/${p.id}`}
+                  to={`/player-profile/${p.id}`}
                   className={`player-card card tilt-card${p.is_featured ? ' featured' : ''}`}
                   data-reveal
                   data-delay={idx * 60}
@@ -301,7 +303,7 @@ useEffect(() => {
                     <div><span >{p.total_goals||0}</span><small>GLS</small></div>
                     <div><span data-assist-count={p.total_assists||0}>{p.total_assists||0}</span><small>AST</small></div>
                   </div>
-                </a>
+                </Link>
               ))
             ) : (
               <div style={{ gridColumn:'1/-1', textAlign:'center', padding:'60px', color:'var(--text-muted)', fontFamily:'var(--font-mono)', fontSize:'0.8rem' }}>

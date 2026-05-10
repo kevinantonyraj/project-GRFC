@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import logoIcon from '../assets/icons/grfc_icon.png'; 
+import { Link } from 'react-router-dom';
 
 const NAV_LINKS = [
   { label: 'Home',        href: '/' },
@@ -85,23 +86,23 @@ const Navbar = () => {
 
       {/* Navbar */}
       <nav className={`navbar${scrolled ? ' scrolled' : ''}`}>
-        <a href="/" className="nav-logo">
+        <Link to="/" className="nav-logo">
           <img src={logoIcon} width="60" height="50" alt="Football" />
           <span className="nav-logo-text">Golden Rock FC</span>
-        </a>
+        </Link>
 
         <ul className="nav-links">
           {NAV_LINKS.map(({ label, href }) => (
             <li key={href}>
-              <a href={href} className={isActive(href) ? 'active' : ''}>
+              <Link to={href} className={isActive(href) ? 'active' : ''}>
                 {label}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>
 
         <div className="nav-right">
-          <a href="/admin" className="btn-admin">Admin</a>
+          <Link to="/admin" className="btn-admin">Admin</Link>
           <button
             className="hamburger"
             aria-label="Menu"
@@ -117,16 +118,16 @@ const Navbar = () => {
       {/* Mobile menu */}
       <div className="mobile-menu" style={{ display: mobileOpen ? 'flex' : 'none' }}>
         {NAV_LINKS.map(({ label, href }) => (
-          <a
+          <Link
             key={href}
-            href={href}
+            to ={href}
             className={isActive(href) ? 'active' : ''}
             onClick={() => setMobileOpen(false)}
           >
             {label}
-          </a>
+          </Link>
         ))}
-        <a href="/admin" onClick={() => setMobileOpen(false)}>Admin Portal</a>
+        <Link to="/admin" onClick={() => setMobileOpen(false)}>Admin Portal</Link>
       </div>
     </>
   );

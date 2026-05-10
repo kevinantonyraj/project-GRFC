@@ -4,6 +4,8 @@ import '../assets/css/admin.css';
 import usePageLoader from '../hooks/usePageLoader';
 import useTilt       from '../hooks/useTilt';
 import { authApi, saveTokens, getToken } from '../utils/auth.js';
+import { Link } from 'react-router-dom';
+
 
 /* ── Forgot Password Modal ───────────────────────────────── 
 const ForgotModal = ({ onClose }) => {
@@ -132,7 +134,7 @@ export default function Admin() {
       
 
       <div className="admin-wrapper">
-        <a href="/" className="admin-back-link">← Return to Public Website</a>
+        <Link to="/" className="admin-back-link">← Return to Public Website</Link>
 
         <div className={`admin-card card tilt-card${shake ? ' shake' : ''}`}>
           <div className="admin-accent-line" />

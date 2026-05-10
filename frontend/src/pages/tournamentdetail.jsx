@@ -7,7 +7,7 @@ import '../assets/css/global.css';
 import '../assets/css/tournaments.css';
 import useTilt       from '../hooks/useTilt';
 import usePageLoader from '../hooks/usePageLoader';
-
+import { Link } from 'react-router-dom';
 import calender from '../assets/icons/calendar.svg';
 import location from '../assets/icons/location.png';
 
@@ -88,7 +88,7 @@ export default function TournamentDetail() {
 
           {/* Breadcrumb */}
           <div className="breadcrumb" data-reveal>
-            <a href="/">Home</a> › <a href="/tournaments">Tournaments</a> ›{' '}
+            <Link to="/">Home</Link> › <Link to="/tournaments">Tournaments</Link> ›{' '}
             <span>{loading ? '...' : tournament?.name || 'Tournament'}</span>
           </div>
 

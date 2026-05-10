@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { adminApi } from '../utils/adminapi.js';
 import { authApi, getUser, clearTokens } from '../utils/auth.js';
-
+import { Link } from 'react-router-dom';
 import axios from "axios";
 
 
@@ -1245,12 +1245,12 @@ export default function AdminPortal() {
             </div>
           )}
 
-          <a
-            href="/"
+          <Link
+            to="/"
             style={{ display: 'block', color: C.muted, textDecoration: 'none', fontSize: '0.8rem', fontFamily: C.mono, marginBottom: '8px', padding: '6px 0', letterSpacing: '0.05em' }}
           >
             ← Public Site
-          </a>
+          </Link>
 
           <button
             onClick={handleLogout}

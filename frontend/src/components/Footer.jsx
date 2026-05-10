@@ -2,6 +2,8 @@ import React from 'react';
 import logoIcon from '../assets/icons/grfc_icon.png'; 
 import whatsappIcon from '../assets/icons/whatsapp.avif';
 import instaIcon from '../assets/icons/insta.jpg';
+import { Link } from 'react-router-dom';
+
 
 const QUICK_LINKS = [
   { label: 'Match Schedule', href: '/matches' },
@@ -23,10 +25,10 @@ const Footer = () => {
 
         {/* Brand */}
         <div className="footer-brand">
-          <a href="/" className="nav-logo" style={{ marginBottom: '10px', display: 'inline-flex' }}>
+          <Link to="/" className="nav-logo" style={{ marginBottom: '10px', display: 'inline-flex' }}>
             <img src={logoIcon} width="50" height="50" alt="Football" />
             <span className="nav-logo-text">Golden Rock FC</span>
-          </a>
+          </Link>
           <p>Official website of Golden Rock FC. Excellence in football since 2023.</p>
           
         </div>
@@ -36,7 +38,7 @@ const Footer = () => {
           <h4>Quick Links</h4>
           <ul>
             {QUICK_LINKS.map(({ label, href }) => (
-              <li key={href}><a href={href}>{label}</a></li>
+              <li key={href}><Link to={href}>{label}</Link></li>
             ))}
           </ul>
         </div>
@@ -45,8 +47,8 @@ const Footer = () => {
         <div className="footer-col">
           <h4>Contact</h4>
           <ul>
-            <li><a href="mailto:info@goldenrockfc.com">✉ info@goldenrockfc.com</a></li>
-            <li><a href="#"> Railway Ground, Ponmalai</a></li>
+            <li><Link to="mailto:info@goldenrockfc.com">✉ info@goldenrockfc.com</Link></li>
+            <li><Link to="#"> Railway Ground, Ponmalai</Link></li>
             <li><span>Trichy city</span></li>
           </ul>
         </div>
@@ -56,10 +58,10 @@ const Footer = () => {
           <h4>Follow Us</h4>
           <div className="footer-social" style={{ marginTop: '4px' }}>
             {SOCIAL.map((item) => (
-  <a href={item.href} key={item.label}>
+  <Link to={item.href} key={item.label}>
     <img src={item.icon} alt={item.label} width="24" height="24" />
     {item.label}
-  </a>
+  </Link>
 ))}
           </div>
         </div>
