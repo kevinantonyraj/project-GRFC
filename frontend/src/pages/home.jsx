@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../utils/api.js';
 import "../assets/css/home.css";
 import Footer from '../components/Footer.jsx';
@@ -332,8 +333,8 @@ export default function Home() {
                 <em>Experience the roar of victory and the strike of excellence.</em>
               </p>
               <div className="hero-actions animate-fade-up" style={{ animationDelay: '0.5s' }}>
-                <a href="/matches" className="btn btn-primary">View Match Center</a>
-                <a href="/club"    className="btn btn-outline">The Club</a>
+                <Link to="/matches" className="btn btn-primary">View Match Center</Link>
+                <Link to="/club"    className="btn btn-outline">The Club</Link>
               </div>
             </div>
             
@@ -366,7 +367,7 @@ export default function Home() {
               <h2 className="section-title">Match <span>Center</span></h2>
               <p className="section-subtitle">Keep up with the latest results and leaderboards</p>
             </div>
-            <a href="/matches" className="btn btn-outline" style={{ alignSelf: 'flex-end' }}>All Match Archives →</a>
+            <Link to="/matches" className="btn btn-outline" style={{ alignSelf: 'flex-end' }}>All Match Archives →</Link>
           </div>
 
           {error && (
@@ -470,9 +471,9 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              <a href="/players" className="btn btn-outline" style={{ marginTop: '16px', width: '100%', justifyContent: 'center' }}>
+              <Link to="/players" className="btn btn-outline" style={{ marginTop: '16px', width: '100%', justifyContent: 'center' }}>
                 View Full Squad →
-              </a>
+              </Link>
             </div>
           </div>
         </section>
