@@ -4,7 +4,7 @@ import '../assets/css/admin.css';
 import usePageLoader from '../hooks/usePageLoader';
 import useTilt       from '../hooks/useTilt';
 import { authApi, saveTokens, getToken } from '../utils/auth.js';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 
 /* ── Forgot Password Modal ───────────────────────────────── 
@@ -49,6 +49,7 @@ const ForgotModal = ({ onClose }) => {
    ADMIN COMPONENT
 ═══════════════════════════════════════════════════════════ */
 export default function Admin() {
+  const navigate = useNavigate();
   usePageLoader();
   useTilt();
 
@@ -101,7 +102,7 @@ export default function Admin() {
         setFeedback({ msg: '✓ Access granted. Redirecting…', cls: 'success' });
         // Redirect to admin portal after short delay
         setTimeout(() => {
-          window.location.href = '/admin-portal';
+          navigate('/admin-portal');
         }, 1000);
       } else {
         setFeedback({ msg: `✗ ${res.message || 'Invalid credentials. Please try again.'}`, cls: 'error' });
