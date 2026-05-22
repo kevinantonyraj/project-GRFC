@@ -79,6 +79,45 @@ export default function TournamentDetail() {
 
   return (
     <>
+      <Helmet>
+        <title>Tournament Details | Golden Rock FC</title>
+
+        <meta
+          name="description"
+          content="View complete tournament details including fixtures, standings, match results, top scorers, participating teams, and tournament statistics."
+        />
+
+        <meta
+          name="keywords"
+          content="tournament details, football standings, football fixtures, tournament statistics, top scorers, tournament teams"
+        />
+
+        <meta
+          property="og:title"
+          content="Tournament Details | Golden Rock FC"
+        />
+
+        <meta
+          property="og:description"
+          content="Detailed football tournament information including standings, fixtures, and statistics."
+        />
+
+        <meta
+          property="og:image"
+          content="https://goldenrockfc.onrender.com/grfc_icon.webp"
+        />
+
+        <meta
+          property="og:type"
+          content="website"
+        />
+
+        <link
+          rel="canonical"
+          href="https://goldenrockfc.onrender.com/tournamentdetails"
+        />
+      </Helmet>
+
       <div className="page-loader" id="loader"><div className="loader-logo">GOLDEN ROCK FC</div><div className="loader-bar"><div className="loader-bar-fill"/></div></div>
       <div className="bg-mesh"/><div className="bg-grain"/>
       <Navbar/>

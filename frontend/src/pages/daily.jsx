@@ -432,6 +432,45 @@ export default function Daily() {
   ══════════════════════════════════════════════════════════ */
   return (
     <>
+      <Helmet>
+        <title>Daily Updates | Golden Rock FC</title>
+
+        <meta
+          name="description"
+          content="Get daily football updates, match highlights, player performances, football news, and tournament activities on Golden Rock FC."
+        />
+
+        <meta
+          name="keywords"
+          content="daily football updates, football news, football highlights, player performance updates, football activities"
+        />
+
+        <meta
+          property="og:title"
+          content="Daily Updates | Golden Rock FC"
+        />
+
+        <meta
+          property="og:description"
+          content="Stay updated with daily football news, match highlights, and player performances."
+        />
+
+        <meta
+          property="og:image"
+          content="https://goldenrockfc.onrender.com/grfc_icon.webp"
+        />
+
+        <meta
+          property="og:type"
+          content="website"
+        />
+
+        <link
+          rel="canonical"
+          href="https://goldenrockfc.onrender.com/daily"
+        />
+      </Helmet>
+
       <div className="page-loader" id="loader">
         <div className="loader-logo">GOLDEN ROCK FC</div>
         <div className="loader-bar"><div className="loader-bar-fill"/></div>

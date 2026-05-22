@@ -195,6 +195,45 @@ export default function Club() {
 
   return (
     <>
+      <Helmet>
+        <title>Clubs | Golden Rock FC</title>
+
+        <meta
+          name="description"
+          content="Discover football clubs, team details, club rankings, player rosters, match history, and tournament participation on Golden Rock FC."
+        />
+
+        <meta
+          name="keywords"
+          content="football clubs, football teams, club rankings, football roster, team statistics, football clubs management"
+        />
+
+        <meta
+          property="og:title"
+          content="Clubs | Golden Rock FC"
+        />
+
+        <meta
+          property="og:description"
+          content="Explore football clubs, team rankings, player rosters, and club statistics."
+        />
+
+        <meta
+          property="og:image"
+          content="https://goldenrockfc.onrender.com/grfc_icon.webp"
+        />
+
+        <meta
+          property="og:type"
+          content="website"
+        />
+
+        <link
+          rel="canonical"
+          href="https://goldenrockfc.onrender.com/club"
+        />
+      </Helmet>
+
       <div className="page-loader" id="loader"><div className="loader-logo">GOLDEN ROCK FC</div><div className="loader-bar"><div className="loader-bar-fill"/></div></div>
       <div className="bg-mesh"/><div className="bg-grain"/>
       <Navbar/>

@@ -183,6 +183,45 @@ useEffect(() => {
 
   return (
     <>
+      <Helmet>
+        <title>Players | Golden Rock FC</title>
+
+        <meta
+          name="description"
+          content="Explore football player statistics, performance records, rankings, goals, assists, and match history on Golden Rock FC."
+        />
+
+        <meta
+          name="keywords"
+          content="football players, player statistics, goals, assists, football rankings, player performance"
+        />
+
+        <meta
+          property="og:title"
+          content="Players | Golden Rock FC"
+        />
+
+        <meta
+          property="og:description"
+          content="View football player statistics, rankings, goals, assists, and performance details."
+        />
+
+        <meta
+          property="og:image"
+          content="https://goldenrockfc.onrender.com/grfc_icon.webp"
+        />
+
+        <meta
+          property="og:type"
+          content="website"
+        />
+
+        <link
+          rel="canonical"
+          href="https://goldenrockfc.onrender.com/players"
+        />
+      </Helmet>
+      
       <div className="page-loader" id="loader"><div className="loader-logo">GOLDEN ROCK FC</div><div className="loader-bar"><div className="loader-bar-fill"/></div></div>
       <div className="bg-mesh"/><div className="bg-grain"/>
       <Navbar/>

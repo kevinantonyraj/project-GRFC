@@ -96,6 +96,45 @@ export default function PlayerProfile() {
   ══════════════════════════════════════════════════════════ */
   return (
     <>
+      <Helmet>
+        <title>Player Profile | Golden Rock FC</title>
+
+        <meta
+          name="description"
+          content="View detailed football player profiles including statistics, achievements, goals, assists, match appearances, and performance history."
+        />
+
+        <meta
+          name="keywords"
+          content="football player profile, player statistics, football achievements, goals, assists, player history"
+        />
+
+        <meta
+          property="og:title"
+          content="Player Profile | Golden Rock FC"
+        />
+
+        <meta
+          property="og:description"
+          content="Detailed football player profiles with goals, assists, achievements, and match history."
+        />
+
+        <meta
+          property="og:image"
+          content="https://goldenrockfc.onrender.com/grfc_icon.webp"
+        />
+
+        <meta
+          property="og:type"
+          content="website"
+        />
+
+        <link
+          rel="canonical"
+          href="https://goldenrockfc.onrender.com/playersprofile"
+        />
+      </Helmet>
+
       <div className="page-loader" id="loader">
         <div className="loader-logo">GOLDEN ROCK FC</div>
         <div className="loader-bar"><div className="loader-bar-fill" /></div>

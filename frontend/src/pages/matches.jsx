@@ -184,6 +184,44 @@ export default function Matches() {
 
   return (
     <>
+      <Helmet>
+        <title>Matches | Golden Rock FC</title>
+
+        <meta
+          name="description"
+          content="View upcoming football matches, live scores, match schedules, results, and detailed match statistics on Golden Rock FC."
+        />
+
+        <meta
+          name="keywords"
+          content="football matches, live scores, football fixtures, match schedules, football results, match statistics"
+        />
+
+        <meta
+          property="og:title"
+          content="Matches | Golden Rock FC"
+        />
+
+        <meta
+          property="og:description"
+          content="Explore football match schedules, live scores, and match statistics."
+        />
+
+        <meta
+          property="og:image"
+          content="https://goldenrockfc.onrender.com/grfc_icon.webp"
+        />
+
+        <meta
+          property="og:type"
+          content="website"
+        />
+
+        <link
+          rel="canonical"
+          href="https://goldenrockfc.onrender.com/matches"
+        />
+      </Helmet>
       <div className="page-loader" id="loader"><div className="loader-logo">GOLDEN ROCK FC</div><div className="loader-bar"><div className="loader-bar-fill"/></div></div>
       <div className="bg-mesh"/><div className="bg-grain"/>
       <Navbar/>

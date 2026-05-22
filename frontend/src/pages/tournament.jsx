@@ -80,6 +80,45 @@ export default function Tournaments() {
 
   return (
     <>
+      <Helmet>
+        <title>Tournaments | Golden Rock FC</title>
+
+        <meta
+          name="description"
+          content="Browse football tournaments, fixtures, standings, match schedules, participating clubs, and tournament results on Golden Rock FC."
+        />
+
+        <meta
+          name="keywords"
+          content="football tournaments, tournament fixtures, football standings, tournament schedules, tournament results"
+        />
+
+        <meta
+          property="og:title"
+          content="Tournaments | Golden Rock FC"
+        />
+
+        <meta
+          property="og:description"
+          content="Explore football tournaments, standings, fixtures, and tournament results."
+        />
+
+        <meta
+          property="og:image"
+          content="https://goldenrockfc.onrender.com/grfc_icon.webp"
+        />
+
+        <meta
+          property="og:type"
+          content="website"
+        />
+
+        <link
+          rel="canonical"
+          href="https://goldenrockfc.onrender.com/tournament"
+        />
+      </Helmet>
+      
       <div className="page-loader" id="loader"><div className="loader-logo">GOLDEN ROCK FC</div><div className="loader-bar"><div className="loader-bar-fill"/></div></div>
       <div className="bg-mesh"/><div className="bg-grain"/>
       <Navbar/>
@@ -201,7 +240,7 @@ export default function Tournaments() {
                     <strong>{p.name}</strong>
                     <span>Last met: {new Date(p.last_met).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}</span>
                   </div>
-                  <Link to="#" className="btn btn-outline" style={{ padding:'6px 14px', fontSize:'0.65rem', marginLeft:'auto' }}>View</Link>
+                  <Link to={`/partner/${p.id}`} className="btn btn-outline" style={{ padding:'6px 14px', fontSize:'0.65rem', marginLeft:'auto' }}>View</Link>
                 </div>
               ))
             ) : (

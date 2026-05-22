@@ -12,14 +12,20 @@ import usePageLoader      from '../hooks/usePageLoader';
 
 import location from '../assets/icons/location.png';
 import calender from '../assets/icons/calendar.svg';
+import { Helmet } from "react-helmet-async";
+
+import img1 from '../assets/images/img1.jpeg';
+import img2 from '../assets/images/img2.jpeg';
+import img3 from '../assets/images/img3.jpeg';
+import img4 from '../assets/images/img4.jpeg';
 
 /* ── Slideshow data ──────────────────────────────────────── */
 const SLIDES = [
-  { bg: 'linear-gradient(135deg,#0a0810 0%,#3A0F5E 40%,#5C1A8A 70%,#C9980A 100%)', img: 'https://www.mumbaiindians.com/static-assets/waf-images/83/60/4a/4-3/592-444/C3p3FQ8cRU.png' },
-  { bg: 'linear-gradient(135deg,#0a0810,#1a0a2e,#5C1A8A)',                          img: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1600&q=80' },
-  { bg: 'linear-gradient(135deg,#0a0810,#2a1a00,#8A6607)',                          img: 'https://images.unsplash.com/photo-1540747913346-19212a4b423d?w=1600&q=80' },
-  { bg: 'linear-gradient(135deg,#0a0810,#3A0F5E,#1a3a1a)',                          img: 'https://images.unsplash.com/photo-1551958219-acbc595d9e2d?w=1600&q=80'  },
-  { bg: 'linear-gradient(135deg,#0a0810,#5C1A8A,#C9980A)',                          img: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1600&q=80' },
+  { bg: 'linear-gradient(135deg,#0a0810 0%,#3A0F5E 40%,#5C1A8A 70%,#C9980A 100%)', img: img4 },
+  { bg: 'linear-gradient(135deg,#0a0810,#1a0a2e,#5C1A8A)',                          img: img1 },
+  { bg: 'linear-gradient(135deg,#0a0810,#2a1a00,#8A6607)',                          img: img2 },
+  { bg: 'linear-gradient(135deg,#0a0810,#3A0F5E,#1a3a1a)',                          img: img3 },
+  { bg: 'linear-gradient(135deg,#0a0810,#5C1A8A,#C9980A)',                          img: img4 },
 ];
 
 /* ── Gallery — each item has multiple images that rotate ─── */
@@ -280,6 +286,43 @@ export default function Home() {
   ══════════════════════════════════════════════════════════ */
   return (
     <>
+      <Helmet>
+        <title>Home | Golden Rock FC</title>
+        <meta
+          name="description"
+          content="Golden Rock FC is a football management platform to track matches, tournaments, clubs, player statistics, and daily football updates."
+        />
+        <meta
+          name="keywords"
+          content="football platform, football management, player statistics, football tournaments, football matches, football clubs"
+        />
+        <meta
+          property="og:title"
+          content="Golden Rock FC"
+        />
+
+        <meta
+          property="og:description"
+          content="Football management platform for matches, tournaments, clubs, and player statistics."
+        />
+
+        <meta
+          property="og:image"
+          content="https://goldenrockfc.onrender.com/grfc_icon.webp"
+        />
+
+        <meta
+          property="og:type"
+          content="website"
+        />
+
+        <link
+          rel="canonical"
+          href="https://goldenrockfc.onrender.com/"
+        />
+      </Helmet>
+
+
       <div className="page-loader" id="loader">
         <div className="loader-logo">GOLDEN ROCK FC</div>
         <div className="loader-bar"><div className="loader-bar-fill" /></div>
@@ -338,7 +381,7 @@ export default function Home() {
               </div>
             </div>
             
-          </div>
+          </div>  
         </section>
 
         {/* ══ STATS ═════════════════════════════════════════ */}
