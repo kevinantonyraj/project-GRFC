@@ -567,8 +567,9 @@ def admin_login(request):
     if not user.is_staff:
         return err('Access denied — admin accounts only', 403)
 
-    refresh = RefreshToken.for_user(user)
-    return ok({
+    try:
+        refresh = RefreshToken.for_user(user)
+        return ok({
         'access':  str(refresh.access_token),
         'refresh': str(refresh),
         'user': {
@@ -578,6 +579,10 @@ def admin_login(request):
             'last_name':  user.last_name,
         }
     }, 'Login successful')
+    except Exception as e:
+        print("JWT ERROR:", e)
+    raise
+    
 
 
 @api_view(['GET'])
