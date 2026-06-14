@@ -7,7 +7,7 @@ import '../assets/css/club.css';
 import useCounterAnimation from '../hooks/useCounterAnimation';
 import useTilt             from '../hooks/useTilt';
 import usePageLoader       from '../hooks/usePageLoader';
-
+import { Helmet } from "react-helmet-async";
 import calender from '../assets/icons/calendar.svg';
 import whatsappIcon from '../assets/icons/whatsapp.avif';
 const TRAINING = [
@@ -23,8 +23,6 @@ const IDENTITY = [
   { icon:'⭐', label:'Motto',       value:'"Fortis in Victoria, Unitas in Corde"', sub:'(Strength in Victory, Unity in Heart)' },
 ];
 
-// Assets are now dynamic — fetched from Django API
-// No more hardcoded list here
 
 const Skeleton = ({ width='100%', height='20px', style={} }) => (
   <div style={{ width, height, borderRadius:'6px', background:'linear-gradient(90deg,var(--bg-card) 25%,rgba(255,255,255,0.05) 50%,var(--bg-card) 75%)', backgroundSize:'200% 100%', animation:'shimmer 1.5s infinite', ...style }}/>
@@ -44,7 +42,7 @@ const useRepeatReveal = (deps = []) => {
   }, deps);
 };
 
-/* ── Staff Modal ─────────────────────────────────────────── */
+
 const StaffModal = ({ member, onClose }) => {
   useEffect(() => {
     const fn = e => { if (e.key === 'Escape') onClose(); };
@@ -71,7 +69,6 @@ const StaffModal = ({ member, onClose }) => {
   );
 };
 
-/* ── All Members Modal ───────────────────────────────────── */
 const AllMembersModal = ({ staff, onClose, onSelectMember }) => {
   const [search, setSearch] = useState('');
   const filtered = staff.filter(m =>
@@ -92,7 +89,7 @@ const AllMembersModal = ({ staff, onClose, onSelectMember }) => {
     >
       <div className="card" style={{ width:'100%', maxWidth:'680px', maxHeight:'80vh', display:'flex', flexDirection:'column', borderRadius:'16px', overflow:'hidden' }}>
 
-        {/* Header */}
+        
         <div style={{ padding:'24px 24px 16px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           <div>
             <div style={{ fontFamily:'var(--font-mono)', fontSize:'0.65rem', color:'var(--gold)', letterSpacing:'0.12em', marginBottom:'4px' }}>ALL MEMBERS</div>
@@ -103,7 +100,6 @@ const AllMembersModal = ({ staff, onClose, onSelectMember }) => {
           <button onClick={onClose} style={{ background:'none', border:'none', color:'var(--text-muted)', fontSize:'1.2rem', cursor:'pointer' }}>✕</button>
         </div>
 
-        {/* Search */}
         <div style={{ padding:'16px 24px', borderBottom:'1px solid var(--border)', position:'relative' }}>
           <span style={{ position:'absolute', left:'36px', top:'50%', transform:'translateY(-50%)', color:'var(--text-muted)' }}>🔍</span>
           <input
@@ -115,7 +111,7 @@ const AllMembersModal = ({ staff, onClose, onSelectMember }) => {
           />
         </div>
 
-        {/* List */}
+        
         <div style={{ overflow:'auto', flex:1, padding:'12px 0' }}>
           {filtered.length > 0 ? filtered.map(member => (
             <div
@@ -150,7 +146,6 @@ const AllMembersModal = ({ staff, onClose, onSelectMember }) => {
           )}
         </div>
 
-        {/* Footer count */}
         <div style={{ padding:'12px 24px', borderTop:'1px solid var(--border)', fontFamily:'var(--font-mono)', fontSize:'0.68rem', color:'var(--text-muted)' }}>
           {filtered.length} of {staff.length} members
         </div>
@@ -159,9 +154,7 @@ const AllMembersModal = ({ staff, onClose, onSelectMember }) => {
   );
 };
 
-/* ═══════════════════════════════════════════════════════════
-   CLUB COMPONENT
-═══════════════════════════════════════════════════════════ */
+
 export default function Club() {
   usePageLoader();  useTilt();
 
@@ -184,7 +177,7 @@ export default function Club() {
       try {
         setLoading(true);
         const data = await api.club();
-        // API now returns staff, partners AND assets
+        
         setStaff(data.staff   || []);
         setAssets(data.assets || []);
       } catch { setError('Failed to load club data.'); }

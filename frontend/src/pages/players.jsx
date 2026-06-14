@@ -8,7 +8,7 @@ import useCounterAnimation from '../hooks/useCounterAnimation';
 import useTilt             from '../hooks/useTilt';
 import usePageLoader       from '../hooks/usePageLoader';
 import { Link } from 'react-router-dom';
-
+import { Helmet } from "react-helmet-async";
 
 const useFloatCounter = (deps = []) => {
   useEffect(() => {
@@ -51,7 +51,6 @@ const Skeleton = ({ width='100%', height='20px', style={} }) => (
 
 const RANK_STYLE = ['gold','silver','bronze'];
 
-/* ── Honours Card with expandable full ranking ───────────── */
 const HonoursCard = ({ title, badge, items, statKey, statLabel, loading }) => {
   const [expanded, setExpanded] = useState(false);
   const displayItems = expanded ? items : items.slice(0, 3);
@@ -101,7 +100,6 @@ const HonoursCard = ({ title, badge, items, statKey, statLabel, loading }) => {
         )}
       </div>
 
-      {/* Full ranking button shown below list too for easy toggle */}
       {!badge && items.length > 3 && (
         <button
           className="btn btn-outline"
@@ -115,9 +113,6 @@ const HonoursCard = ({ title, badge, items, statKey, statLabel, loading }) => {
   );
 };
 
-/* ═══════════════════════════════════════════════════════════
-   PLAYERS COMPONENT
-═══════════════════════════════════════════════════════════ */
 export default function Players() {
   usePageLoader();    useTilt();
 
@@ -137,15 +132,13 @@ export default function Players() {
   useRepeatReveal([players]);
   useFloatCounter([snapshot]);
   
-// Add this inside the Players component, after all other hooks:
 useEffect(() => {
   if (loading || players.length === 0) return;
 
-  // Small delay to ensure DOM has updated after React render
   const timer = setTimeout(() => {
     document.querySelectorAll('[data-assist-count]').forEach(el => {
       const target = parseInt(el.dataset.assistCount, 10) || 0;
-      el.textContent = target; // just set directly, no animation needed
+      el.textContent = target; 
     });
   }, 200);
 
@@ -165,7 +158,6 @@ useEffect(() => {
     fetchAll();
   }, []);
 
-  // Client-side search filter
   useEffect(() => {
     if (!search.trim()) { setPlayers(allPlayers); return; }
     const q = search.toLowerCase();

@@ -5,21 +5,12 @@ from .models import (
     TournamentSquad, Staff, Partner
 )
 
-
-# ═══════════════════════════════════════════════════════════
-#  TEAM
-# ═══════════════════════════════════════════════════════════
 class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Team
         fields = '__all__'
 
 
-# ═══════════════════════════════════════════════════════════
-#  PLAYER
-#  current_team nested so React gets full team object
-#  not just the ID
-# ═══════════════════════════════════════════════════════════
 class PlayerSerializer(serializers.ModelSerializer):
     current_team = TeamSerializer(read_only=True)
     total_appearances = serializers.IntegerField(read_only=True)
@@ -31,7 +22,6 @@ class PlayerSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-# ── Player with stats (used in top scorers / honours board) ─
 class PlayerStatsSerializer(serializers.ModelSerializer):
     total_goals   = serializers.IntegerField(read_only=True)
     total_assists = serializers.IntegerField(read_only=True)
@@ -46,10 +36,6 @@ class PlayerStatsSerializer(serializers.ModelSerializer):
         ]
 
 
-# ═══════════════════════════════════════════════════════════
-#  GOAL
-#  Nested player + team so React gets names directly
-# ═══════════════════════════════════════════════════════════
 class GoalSerializer(serializers.ModelSerializer):
     player_name = serializers.CharField(source='player.name', read_only=True)
     team_name   = serializers.CharField(source='team.name',   read_only=True)
@@ -62,10 +48,6 @@ class GoalSerializer(serializers.ModelSerializer):
         ]
 
 
-# ═══════════════════════════════════════════════════════════
-#  MATCH APPEARANCE
-#  Nested player + team names
-# ═══════════════════════════════════════════════════════════
 class MatchAppearanceSerializer(serializers.ModelSerializer):
     player_name   = serializers.CharField(source='player.name',     read_only=True)
     player_initials = serializers.CharField(source='player.initials', read_only=True)
@@ -81,11 +63,6 @@ class MatchAppearanceSerializer(serializers.ModelSerializer):
         ]
 
 
-# ═══════════════════════════════════════════════════════════
-#  MATCH
-#  Full nested serializer — includes team names,
-#  goals list and appearances list
-# ═══════════════════════════════════════════════════════════
 class MatchSerializer(serializers.ModelSerializer):
     home_team_name  = serializers.CharField(source='home_team.name',       read_only=True)
     home_team_code  = serializers.CharField(source='home_team.short_code', read_only=True)
@@ -107,10 +84,6 @@ class MatchSerializer(serializers.ModelSerializer):
         ]
 
 
-# ═══════════════════════════════════════════════════════════
-#  DAILY ENTRY
-#  Full match details for Daily page
-# ═══════════════════════════════════════════════════════════
 class DailyEntrySerializer(serializers.ModelSerializer):
     match       = MatchSerializer(read_only=True)
     motm_player = PlayerSerializer(read_only=True)
@@ -124,10 +97,6 @@ class DailyEntrySerializer(serializers.ModelSerializer):
         ]
 
 
-# ═══════════════════════════════════════════════════════════
-#  TOURNAMENT SQUAD
-#  Player list for a tournament
-# ═══════════════════════════════════════════════════════════
 class TournamentSquadSerializer(serializers.ModelSerializer):
     player_name     = serializers.CharField(source='player.name',     read_only=True)
     player_initials = serializers.CharField(source='player.initials', read_only=True)
@@ -137,10 +106,6 @@ class TournamentSquadSerializer(serializers.ModelSerializer):
         fields = ['id', 'player_name', 'player_initials']
 
 
-# ═══════════════════════════════════════════════════════════
-#  TOURNAMENT TEAM
-#  All teams in a tournament with their final position
-# ═══════════════════════════════════════════════════════════
 class TournamentTeamSerializer(serializers.ModelSerializer):
     team_name  = serializers.CharField(source='team.name',       read_only=True)
     team_code  = serializers.CharField(source='team.short_code', read_only=True)
@@ -151,10 +116,6 @@ class TournamentTeamSerializer(serializers.ModelSerializer):
         fields = ['id', 'team_name', 'team_code', 'team_badge', 'final_position']
 
 
-# ═══════════════════════════════════════════════════════════
-#  TOURNAMENT
-#  Full tournament with squad + teams nested
-# ═══════════════════════════════════════════════════════════
 class TournamentSerializer(serializers.ModelSerializer):
     tournament_squads = TournamentSquadSerializer(many=True, read_only=True)
     tournament_teams  = TournamentTeamSerializer(many=True,  read_only=True)
@@ -168,18 +129,12 @@ class TournamentSerializer(serializers.ModelSerializer):
         ]
 
 
-# ═══════════════════════════════════════════════════════════
-#  STAFF
-# ═══════════════════════════════════════════════════════════
 class StaffSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Staff
         fields = '__all__'
 
 
-# ═══════════════════════════════════════════════════════════
-#  PARTNER
-# ═══════════════════════════════════════════════════════════
 class PartnerSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Partner

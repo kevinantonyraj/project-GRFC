@@ -1,11 +1,6 @@
 from django.db import models
 
 
-# ═══════════════════════════════════════════════════════════
-#  TEAM
-#  Stores every team — both Golden Rock squads and opponents
-#  Same team can appear in unlimited matches via FK reference
-# ═══════════════════════════════════════════════════════════
 class Team(models.Model):
     name           = models.CharField(max_length=100)
     short_code     = models.CharField(max_length=5)        # GR, RS, IW
@@ -16,13 +11,6 @@ class Team(models.Model):
         return self.name
 
 
-# ═══════════════════════════════════════════════════════════
-#  PLAYER
-#  Stores every Golden Rock FC player once.
-#  current_team is only for display on Players page squad grid.
-#  Actual per-match team is stored in MatchAppearance.
-#sample
-# ═══════════════════════════════════════════════════════════
 class Player(models.Model):
     POSITION_CHOICES = [
         ('GK',  'Goalkeeper'),
@@ -42,7 +30,6 @@ class Player(models.Model):
     is_featured  = models.BooleanField(default=False)
     is_active    = models.BooleanField(default=True)
 
-    # Only for display on Players page — NOT used for match data
     current_team = models.ForeignKey(
         Team,
         on_delete=models.SET_NULL,
@@ -55,13 +42,6 @@ class Player(models.Model):
         return self.name
 
 
-# ═══════════════════════════════════════════════════════════
-#  MATCH
-#  One row per match played.
-#  home_team and away_team both reference the Team table.
-#  Same two teams can play unlimited times — each is a new row.
-#  match_type tells us if it's internal (GR vs GR) or external.
-# ═══════════════════════════════════════════════════════════
 class Match(models.Model):
     RESULT_CHOICES = [
         ('win',  'Win'),
@@ -70,17 +50,16 @@ class Match(models.Model):
     ]
 
     MATCH_TYPE_CHOICES = [
-        ('internal',    'Internal'),     # GR First Team vs GR Reserve
-        ('external',    'External'),     # GR vs opponent
-        ('friendly',    'Friendly'),     # friendly match
-        ('tournament',  'Tournament'),   # tournament match
+        ('internal',    'Internal'),     
+        ('external',    'External'),     
+        ('friendly',    'Friendly'),     
+        ('tournament',  'Tournament'),   
     ]
 
     date        = models.DateTimeField()
     competition = models.CharField(max_length=100)
     venue       = models.CharField(max_length=100)
 
-    # Both reference Team table — handles internal and external matches
     home_team   = models.ForeignKey(
         Team,
         on_delete=models.CASCADE,
@@ -110,13 +89,6 @@ class Match(models.Model):
         return f"{self.home_team.name} vs {self.away_team.name} — {self.date.date()}"
 
 
-# ═══════════════════════════════════════════════════════════
-#  GOAL
-#  Every goal scored in every match.
-#  team field tells which side of the match scored —
-#  critical for internal matches where both teams are GR squads.
-#  is_own_goal excluded from top scorer calculations.
-# ═══════════════════════════════════════════════════════════
 class Goal(models.Model):
     match       = models.ForeignKey(Match,  on_delete=models.CASCADE, related_name='goals')
     player      = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='goals')
@@ -128,14 +100,6 @@ class Goal(models.Model):
         return f"{self.player.name} {self.minute}' ({self.team.name})"
 
 
-# ═══════════════════════════════════════════════════════════
-#  MATCH APPEARANCE
-#  Which player played in which match for which team.
-#  This is where per-match team assignment lives —
-#  same player can be team=FirstTeam one day
-#  and team=ReserveTeam the next day.
-#  Used to calculate top assists and MOTM awards.
-# ═══════════════════════════════════════════════════════════
 class MatchAppearance(models.Model):
     match         = models.ForeignKey(Match,  on_delete=models.CASCADE, related_name='appearances')
     player        = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='appearances')
@@ -153,13 +117,6 @@ class MatchAppearance(models.Model):
         return f"{self.player.name} — {self.match}"
 
 
-# ═══════════════════════════════════════════════════════════
-#  DAILY ENTRY
-#  Extra details for the Daily page view.
-#  One entry per match (OneToOne).
-#  Keeps the Match table clean — not every match
-#  needs daily notes.
-# ═══════════════════════════════════════════════════════════
 class DailyEntry(models.Model):
     match        = models.OneToOneField(Match,  on_delete=models.CASCADE, related_name='daily_entry')
     date         = models.DateField()
@@ -180,12 +137,6 @@ class DailyEntry(models.Model):
         return f"Daily Entry — {self.date}"
 
 
-# ═══════════════════════════════════════════════════════════
-#  TOURNAMENT
-#  One row per tournament entered.
-#  Links to teams via TournamentTeam (all participants).
-#  Links to players via TournamentSquad (GR squad only).
-# ═══════════════════════════════════════════════════════════
 class Tournament(models.Model):
     RESULT_CHOICES = [
         ('champions', 'Champions'),
@@ -203,21 +154,13 @@ class Tournament(models.Model):
     total_goals   = models.IntegerField(default=0)
     year          = models.IntegerField()
 
-    # All participating teams
     teams  = models.ManyToManyField(Team,   through='TournamentTeam',  blank=True)
-    # Golden Rock players selected for this tournament
     squad  = models.ManyToManyField(Player, through='TournamentSquad', blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.year})"
 
 
-# ═══════════════════════════════════════════════════════════
-#  TOURNAMENT TEAM
-#  Maps which teams participated in which tournament.
-#  final_position tracks where each team finished.
-#  e.g. GR = 1st, Royal Strikers = 2nd etc.
-# ═══════════════════════════════════════════════════════════
 class TournamentTeam(models.Model):
     tournament     = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='tournament_teams')
     team           = models.ForeignKey(Team,       on_delete=models.CASCADE, related_name='tournament_teams')
@@ -230,12 +173,6 @@ class TournamentTeam(models.Model):
         return f"{self.team.name} in {self.tournament.name}"
 
 
-# ═══════════════════════════════════════════════════════════
-#  TOURNAMENT SQUAD
-#  Maps which Golden Rock players were in each tournament squad.
-#  Same player can be in multiple tournament squads —
-#  no duplication in Player table.
-# ═══════════════════════════════════════════════════════════
 class TournamentSquad(models.Model):
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='tournament_squads')
     player     = models.ForeignKey(Player,     on_delete=models.CASCADE, related_name='tournament_squads')
@@ -247,11 +184,6 @@ class TournamentSquad(models.Model):
         return f"{self.player.name} in {self.tournament.name}"
 
 
-# ═══════════════════════════════════════════════════════════
-#  STAFF
-#  Club staff members shown on Club page.
-#  Standalone — no relationships needed.
-# ═══════════════════════════════════════════════════════════
 class Staff(models.Model):
     name         = models.CharField(max_length=100)
     initials     = models.CharField(max_length=3)
@@ -265,11 +197,6 @@ class Staff(models.Model):
         return self.name
 
 
-# ═══════════════════════════════════════════════════════════
-#  PARTNER
-#  Friendly partner clubs shown on Tournaments page.
-#  Standalone — no relationships needed.
-# ═══════════════════════════════════════════════════════════
 class Partner(models.Model):
     name      = models.CharField(max_length=100)
     initials  = models.CharField(max_length=5)
@@ -286,10 +213,10 @@ class ClubAsset(models.Model):
     Dynamic club assets shown on the Club page.
     Replaces the hardcoded ASSETS list in Club.jsx.
     """
-    icon  = models.CharField(max_length=10)   # emoji e.g. ⚽
+    icon  = models.CharField(max_length=10)   
     count = models.IntegerField(default=0)
-    label = models.CharField(max_length=100)  # e.g. Match Balls
-    order = models.IntegerField(default=0)    # display order
+    label = models.CharField(max_length=100)  
+    order = models.IntegerField(default=0)    
  
     class Meta:
         ordering = ['order', 'id']

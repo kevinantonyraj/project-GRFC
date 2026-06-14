@@ -6,7 +6,7 @@ import '../assets/css/global.css';
 import '../assets/css/matches.css';
 import useTilt       from '../hooks/useTilt';
 import usePageLoader from '../hooks/usePageLoader';
-
+import { Helmet } from "react-helmet-async";
 import calender from '../assets/icons/calendar.svg';
 import location from '../assets/icons/location.png';
 
@@ -153,9 +153,6 @@ const MatchRow = ({ match, index }) => {
   );
 };
 
-/* ═══════════════════════════════════════════════════════════
-   MATCHES COMPONENT
-═══════════════════════════════════════════════════════════ */
 export default function Matches() {
   usePageLoader();  useTilt();
 
@@ -169,8 +166,6 @@ export default function Matches() {
     const fetch = async () => {
       try {
         setLoading(true); setError(null);
-        // For internal/tournament, fetch all then filter client-side
-        // because Django result filter only covers win/draw/loss
         const resultFilter = ['win','draw','loss'].includes(activeFilter) ? activeFilter : null;
         let data = await api.matches(resultFilter);
         if (activeFilter === 'internal')   data = data.filter(m => m.match_type === 'internal');

@@ -1,4 +1,3 @@
-// auth.js and adminapi.js and api.js - same change
 const BASE = import.meta.env.VITE_API_BASE_URL;
 
 const get = (url) => fetch(url).then(r => {

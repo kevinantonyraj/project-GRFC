@@ -3,11 +3,9 @@ import { adminApi } from '../utils/adminapi.js';
 import { authApi, getUser, clearTokens } from '../utils/auth.js';
 import { Link } from 'react-router-dom';
 import axios from "axios";
+import { Helmet } from "react-helmet-async";
 
 
-/* ════════════════════════════════════════════════════════════
-   DESIGN TOKENS — Refined professional dark palette
-════════════════════════════════════════════════════════════ */
 const C = {
   bg:       '#09090f',
   bgCard:   '#0f0e18',
@@ -28,7 +26,6 @@ const C = {
   sans:     '"DM Sans","Segoe UI",system-ui,sans-serif',
 };
 
-/* ── Typography scale ─────────────────────────────────────── */
 const T = {
   eyebrow: {
     fontFamily: C.mono,
@@ -71,7 +68,6 @@ const T = {
   },
 };
 
-/* ── Layout & component styles ────────────────────────────── */
 const S = {
   page:    { display: 'flex', height: '100vh', background: C.bg, color: C.ivory, fontFamily: C.sans, overflow: 'hidden', fontSize: '14px' },
   sidebar: { width: '220px', flexShrink: 0, background: C.bgCard, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
@@ -79,12 +75,12 @@ const S = {
   card:    { background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '28px', marginBottom: '20px' },
   cardSm:  { background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '16px' },
 
-  /* Inputs */
+
   input:    { width: '100%', background: C.bgDeep, border: `1px solid ${C.border}`, borderRadius: '7px', color: C.ivory, padding: '10px 13px', fontFamily: C.sans, fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s, box-shadow 0.2s' },
   select:   { width: '100%', background: C.bgDeep, border: `1px solid ${C.border}`, borderRadius: '7px', color: C.ivory, padding: '10px 13px', fontFamily: C.sans, fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', cursor: 'pointer', appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23b8b4a0' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' },
   textarea: { width: '100%', background: C.bgDeep, border: `1px solid ${C.border}`, borderRadius: '7px', color: C.ivory, padding: '10px 13px', fontFamily: C.sans, fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', resize: 'vertical', minHeight: '90px' },
 
-  /* Buttons — professional, no gradients, clean weight */
+ 
   btnPri: {
     background: C.gold,
     border: 'none',
@@ -141,9 +137,7 @@ const S = {
   tag:  { display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', borderRadius: '4px', fontSize: '0.72rem', fontFamily: C.mono, letterSpacing: '0.06em', fontWeight: 600 },
 };
 
-/* ════════════════════════════════════════════════════════════
-   SHARED PRIMITIVES
-════════════════════════════════════════════════════════════ */
+
 const Toast = ({ msg, type, onDone }) => {
   useEffect(() => { const t = setTimeout(onDone, 3200); return () => clearTimeout(t); }, [onDone]);
   return (
@@ -267,9 +261,6 @@ const Table = ({ cols, rows, onEdit, onDelete }) => (
   </div>
 );
 
-/* ════════════════════════════════════════════════════════════
-   TEAMS
-════════════════════════════════════════════════════════════ */
 const TeamsSection = ({ toast, refreshBootstrap }) => {
   const [teams,   setTeams]   = useState([]);
   const [loading, setLoading] = useState(true);
@@ -336,9 +327,6 @@ const TeamsSection = ({ toast, refreshBootstrap }) => {
   );
 };
 
-/* ════════════════════════════════════════════════════════════
-   PLAYERS
-════════════════════════════════════════════════════════════ */
 const POSITIONS = ['GK', 'DEF', 'MID', 'FWD'];
 
 const PlayersSection = ({ toast, bootstrap, refreshBootstrap }) => {
@@ -416,9 +404,6 @@ const PlayersSection = ({ toast, bootstrap, refreshBootstrap }) => {
   );
 };
 
-/* ════════════════════════════════════════════════════════════
-   MATCHES
-════════════════════════════════════════════════════════════ */
 const MatchesSection = ({ toast, bootstrap }) => {
   const [matches,  setMatches]  = useState([]);
   const [loading,  setLoading]  = useState(true);
@@ -729,7 +714,7 @@ const MatchDetail = ({ match, teams, players, toast, onBack }) => {
             <FG label="Playing For Team *"><select style={S.select} value={aForm.team_id} onChange={e => setAForm(f => ({ ...f, team_id: e.target.value }))}><option value="">— Select team —</option>{teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></FG>
             <div style={{ height: 14 }} />
             <div style={{ ...S.row, gridTemplateColumns: '1fr 1fr' }}>
-              {/*<FG label="Rating (0–10)"><input type="number" min={0} max={10} step={0.1} style={S.input} value={aForm.rating} onChange={e => setAForm(f => ({ ...f, rating: e.target.value }))} placeholder="8.5" /></FG>*/}
+             
               <FG label="Assists"><input type="number" min={0} style={S.input} value={aForm.assists} onChange={e => setAForm(f => ({ ...f, assists: Number(e.target.value) }))} /></FG>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '18px' }}>

@@ -19,7 +19,6 @@ import img2 from '../assets/images/img2.jpeg';
 import img3 from '../assets/images/img3.jpeg';
 import img4 from '../assets/images/img4.jpeg';
 
-/* ── Slideshow data ──────────────────────────────────────── */
 const SLIDES = [
   { bg: 'linear-gradient(135deg,#0a0810 0%,#3A0F5E 40%,#5C1A8A 70%,#C9980A 100%)', img: img4 },
   { bg: 'linear-gradient(135deg,#0a0810,#1a0a2e,#5C1A8A)',                          img: img1 },
@@ -28,7 +27,6 @@ const SLIDES = [
   { bg: 'linear-gradient(135deg,#0a0810,#5C1A8A,#C9980A)',                          img: img4 },
 ];
 
-/* ── Gallery — each item has multiple images that rotate ─── */
 const GALLERY_ITEMS = [
   {
     cls: 'large', cap: 'Match Day Victory', delay: 0,
@@ -75,7 +73,6 @@ const GALLERY_ITEMS = [
   },
 ];
 
-/* ── Skeleton ────────────────────────────────────────────── */
 const Skeleton = ({ width = '100%', height = '20px', style = {} }) => (
   <div style={{
     width, height, borderRadius: '6px',
@@ -86,12 +83,6 @@ const Skeleton = ({ width = '100%', height = '20px', style = {} }) => (
   }} />
 );
 
-/* ── Gallery Item ─────────────────────────────────────────── */
-/*
-  Each card independently cycles through its own images array.
-  Uses two layered divs — one fades out, one fades in — for a
-  smooth crossfade effect every 3 seconds.
-*/
 const GalleryItem = ({ item, onOpen }) => {
   const [imgIndex,  setImgIndex]  = useState(0);
   const [nextIndex, setNextIndex] = useState(1 % item.images.length);
@@ -101,10 +92,8 @@ const GalleryItem = ({ item, onOpen }) => {
     if (item.images.length <= 1) return;
 
     const interval = setInterval(() => {
-      // Start crossfade
       setFading(true);
 
-      // After fade completes, swap images and reset fade
       setTimeout(() => {
         setImgIndex(i  => (i + 1) % item.images.length);
         setNextIndex(i => (i + 1) % item.images.length);
@@ -124,7 +113,6 @@ const GalleryItem = ({ item, onOpen }) => {
       onClick={() => onOpen(item.images[imgIndex], item.cap)}
       style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
     >
-      {/* Current image — fades OUT */}
       <div
         className="gallery-img"
         style={{
@@ -135,7 +123,6 @@ const GalleryItem = ({ item, onOpen }) => {
         }}
       />
 
-      {/* Next image — fades IN */}
       <div
         className="gallery-img"
         style={{
@@ -154,9 +141,6 @@ const GalleryItem = ({ item, onOpen }) => {
 };
 
 
-/* ═══════════════════════════════════════════════════════════
-   HOME COMPONENT
-═══════════════════════════════════════════════════════════ */
 export default function Home() {
   usePageLoader();
   
@@ -164,7 +148,6 @@ export default function Home() {
   useProgressBar();
   useTilt();
 
-  /* ── API state ─────────────────────────────────────────── */
   const [homeData, setHomeData] = useState(null);
   const [snapshot, setSnapshot] = useState(null);
   const [loading,  setLoading]  = useState(true);
@@ -188,7 +171,6 @@ export default function Home() {
     fetchAll();
   }, []);
 
-  /* ── Slideshow ─────────────────────────────────────────── */
   const [current, setCurrent] = useState(0);
   const timerRef    = useRef(null);
   const touchStartX = useRef(0);
@@ -209,7 +191,6 @@ export default function Home() {
     timerRef.current = setInterval(() => setCurrent(c => (c + 1) % SLIDES.length), 5000);
   };
 
-  /* ── Parallax ──────────────────────────────────────────── */
   const heroContentRef = useRef(null);
   useEffect(() => {
     const fn = () => {
@@ -223,7 +204,6 @@ export default function Home() {
     return () => window.removeEventListener('scroll', fn);
   }, []);
 
-  /* ── Particles ─────────────────────────────────────────── */
   const canvasRef = useRef(null);
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -253,7 +233,6 @@ export default function Home() {
     return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
   }, []);
 
-  /* ── Lightbox ──────────────────────────────────────────── */
   const [lightbox, setLightbox] = useState({ open: false, src: '', caption: '' });
   const openLightbox  = (src, caption) => { setLightbox({ open: true, src, caption }); document.body.style.overflow = 'hidden'; };
   const closeLightbox = ()             => { setLightbox({ open: false, src: '', caption: '' }); document.body.style.overflow = ''; };
@@ -263,7 +242,6 @@ export default function Home() {
     return () => document.removeEventListener('keydown', fn);
   }, [lightbox.open]);
 
-  /* ── Derived from API ──────────────────────────────────── */
   const seasonStats = homeData?.season_stats || {};
   const topScorers  = homeData?.top_scorers  || [];
   const lastMatch   = homeData?.last_match   || null;
@@ -281,9 +259,6 @@ export default function Home() {
     { label: 'Avg. Possession', count: 62,                          width: 62,                          delay: 300, suffix: '%' },
   ];
 
-  /* ══════════════════════════════════════════════════════════
-     RENDER
-  ══════════════════════════════════════════════════════════ */
   return (
     <>
       <Helmet>
@@ -333,7 +308,7 @@ export default function Home() {
 
       <div className="page-wrapper">
 
-        {/* ══ HERO ══════════════════════════════════════════ */}
+        {/* ══ HERO  */}
         <section className="hero-section">
           <canvas ref={canvasRef} style={{ position:'absolute', inset:0, pointerEvents:'none', zIndex:1, opacity:0.35 }} />
 

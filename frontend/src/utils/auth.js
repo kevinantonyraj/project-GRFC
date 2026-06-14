@@ -1,14 +1,8 @@
-// backend/api/auth.js
-// Centralised auth helpers used by both admin.jsx and adminportal.jsx
-
 const BASE = import.meta.env.VITE_API_BASE_URL;
 const TOKEN_KEY   = 'gr_admin_token';
 const REFRESH_KEY = 'gr_admin_refresh';
 const USER_KEY    = 'gr_admin_user';
-// auth.js and adminapi.js and api.js - same change
 
-
-// ── Token storage ─────────────────────────────────────────
 export const saveTokens = (access, refresh, user) => {
   localStorage.setItem(TOKEN_KEY,   access);
   localStorage.setItem(REFRESH_KEY, refresh);
@@ -28,7 +22,6 @@ export const clearTokens = () => {
   localStorage.removeItem(USER_KEY);
 };
 
-// ── API calls ─────────────────────────────────────────────
 export const authApi = {
 
   login: async (email, password) => {
@@ -66,8 +59,6 @@ export const authApi = {
   },
 };
 
-// ── Add auth header to all admin API calls ────────────────
-// Wrap this around adminApi calls in adminapi.js
 export const authHeader = () => {
   const token = getToken();
   return token ? { 'Authorization': `Bearer ${token}` } : {};

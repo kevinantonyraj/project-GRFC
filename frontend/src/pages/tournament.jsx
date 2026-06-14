@@ -10,6 +10,7 @@ import usePageLoader       from '../hooks/usePageLoader';
 import { Link } from 'react-router-dom';
 import calender from '../assets/icons/calendar.svg';
 import location from '../assets/icons/location.png';
+import { Helmet } from "react-helmet-async";
 
 const FILTERS = [
   { label:'All',         value:'all'       },

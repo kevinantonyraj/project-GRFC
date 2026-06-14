@@ -9,8 +9,7 @@ import useCounterAnimation  from '../hooks/useCounterAnimation';
 import useProgressBar       from '../hooks/useProgressBar';
 import useTilt              from '../hooks/useTilt';
 import usePageLoader        from '../hooks/usePageLoader';
-
-/* ── Skeleton ────────────────────────────────────────────── */
+import { Helmet } from "react-helmet-async";
 const Skeleton = ({ width = '100%', height = '20px', style = {} }) => (
   <div style={{
     width, height, borderRadius: '6px',
@@ -21,7 +20,6 @@ const Skeleton = ({ width = '100%', height = '20px', style = {} }) => (
   }} />
 );
 
-/* ── Repeating Scroll Reveal ─────────────────────────────── */
 const useRepeatScrollReveal = (deps = []) => {
   useEffect(() => {
     const els = document.querySelectorAll('[data-reveal]');
@@ -43,11 +41,8 @@ const useRepeatScrollReveal = (deps = []) => {
   }, deps);
 };
 
-/* ═══════════════════════════════════════════════════════════
-   PLAYER PROFILE COMPONENT
-═══════════════════════════════════════════════════════════ */
 export default function PlayerProfile() {
-  const { id } = useParams(); // gets player ID from URL /player-profile/:id
+  const { id } = useParams(); 
 
   usePageLoader();
   
@@ -79,21 +74,15 @@ export default function PlayerProfile() {
     if (id) fetchPlayer();
   }, [id]);
 
-  /* ── Derived ───────────────────────────────────────────── */
   const player       = data?.player        || null;
   const stats        = data?.career_stats  || {};
   const matchHistory = data?.match_history || [];
 
-  /* ── Progress bar widths (capped at 100) ───────────────── */
-  const goalProgress  = Math.min((stats.total_goals   / 30) * 100, 100); // target 30
-  const availProgress = Math.min((stats.total_matches / 38) * 100, 100); // target 38 games
+  const goalProgress  = Math.min((stats.total_goals   / 30) * 100, 100); 
+  const availProgress = Math.min((stats.total_matches / 38) * 100, 100); 
 
-  /* ── Result colour ─────────────────────────────────────── */
   const resultColor = { win: '#4ade80', draw: 'var(--gold-l)', loss: '#f87171' };
 
-  /* ══════════════════════════════════════════════════════════
-     RENDER
-  ══════════════════════════════════════════════════════════ */
   return (
     <>
       <Helmet>
@@ -279,7 +268,6 @@ export default function PlayerProfile() {
               {/* Sidebar */}
               <div className="profile-sidebar">
 
-                {/* Season Summary with progress bars */}
                 <div className="summary-card card" data-reveal data-delay="80">
                   <div className="card-header" style={{ padding: '20px 20px 0' }}>
                     <span>📊 Season Summary</span>

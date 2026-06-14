@@ -24,15 +24,8 @@ from .serializers import (
     ClubAssetSerializer
 )
 
-
-# ═══════════════════════════════════════════════════════════
-#  HOME PAGE
-#  — last_match: the most recently inserted match (any type)
-#  — season_stats: live from DB (players, matches, goals)
-# ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def home_data(request):
-    # Latest match regardless of type
     last_match = Match.objects.select_related(
         'home_team', 'away_team'
     ).prefetch_related(
@@ -40,7 +33,6 @@ def home_data(request):
         'appearances', 'appearances__player', 'appearances__team'
     ).order_by('-date').first()
 
-    # Live stats from DB
     total_goals   = Goal.objects.filter(is_own_goal=False).count()
     total_matches = Match.objects.count()
     total_players = Player.objects.filter(is_active=True).count()
@@ -62,21 +54,15 @@ def home_data(request):
     })
 
 
-# ═══════════════════════════════════════════════════════════
-#  DAILY PAGE
-#  Shows internal matches only (match_type='internal')
-#  Dates ribbon pulls from DailyEntry records
-# ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def daily_data(request, date=None):
     date = date or request.query_params.get('date', None)
 
-    # ── All unique dates — deduplicated and sorted newest first ──
     all_dates = list(
         DailyEntry.objects
         .order_by('-date')
         .values_list('date', flat=True)
-        .distinct()   # ← removes duplicate dates
+        .distinct()   
     )
 
     if not all_dates:
@@ -85,18 +71,16 @@ def daily_data(request, date=None):
             'all_dates': [],
         })
 
-    # ── Pick which date to show ───────────────────────────────
     if date:
         target_date = date
     else:
-        target_date = str(all_dates[0])   # most recent date
+        target_date = str(all_dates[0])   
 
-    # ── Get ALL entries for that date (multiple matches allowed) ──
     entries = DailyEntry.objects.filter(
         date=target_date
     ).select_related(
         'match', 'match__home_team', 'match__away_team', 'motm_player'
-    ).order_by('match__date')   # order by kick-off time within the day
+    ).order_by('match__date')   
 
     return Response({
         'entry':   DailyEntrySerializer(entries, many=True).data,
@@ -105,16 +89,9 @@ def daily_data(request, date=None):
     })
 
 
-# ═══════════════════════════════════════════════════════════
-#  MATCHES PAGE
-#  Excludes internal matches (those go to Daily page)
-#  Supports ?result=win|draw|loss filter
-# ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def matches_list(request):
     result_filter = request.query_params.get('result', None)
-
-    # Exclude internal matches — they appear on the Daily page
     matches = Match.objects.exclude(
         match_type='internal'
     ).select_related(
@@ -130,9 +107,6 @@ def matches_list(request):
     return Response(MatchSerializer(matches, many=True).data)
 
 
-# ═══════════════════════════════════════════════════════════
-#  PLAYERS LIST — with search + annotated stats
-# ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def players_list(request):
     search = request.query_params.get('search', '').strip()
@@ -159,10 +133,6 @@ def players_list(request):
 
     return Response(PlayerSerializer(players, many=True).data)
 
-
-# ═══════════════════════════════════════════════════════════
-#  PLAYER PROFILE
-# ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def player_profile(request, pk):
     player = get_object_or_404(Player, pk=pk)
@@ -205,10 +175,6 @@ def player_profile(request, pk):
         'match_history': match_history,
     })
 
-
-# ═══════════════════════════════════════════════════════════
-#  HONOURS BOARD
-# ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def honours_board(request):
     top_scorers = list(Player.objects.annotate(
@@ -235,10 +201,6 @@ def honours_board(request):
         'top_motm':    top_motm,
     })
 
-
-# ═══════════════════════════════════════════════════════════
-#  SEASON SNAPSHOT
-# ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def season_snapshot(request):
     total_matches = Match.objects.count()
@@ -260,10 +222,6 @@ def season_snapshot(request):
         'total_matches':  total_matches,
     })
 
-
-# ═══════════════════════════════════════════════════════════
-#  TOURNAMENTS LIST
-# ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def tournaments_list(request):
     result_filter = request.query_params.get('result', None)
@@ -278,10 +236,6 @@ def tournaments_list(request):
 
     return Response(TournamentSerializer(tournaments, many=True).data)
 
-
-# ═══════════════════════════════════════════════════════════
-#  TOURNAMENT DETAIL — full match timeline
-# ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def tournament_detail(request, pk):
     tournament = get_object_or_404(Tournament, pk=pk)
@@ -325,10 +279,6 @@ def tournament_detail(request, pk):
         'matches':    stages,
     })
 
-
-# ═══════════════════════════════════════════════════════════
-#  CLUB PAGE — staff + partners + assets (dynamic)
-# ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 def club_data(request):
     staff    = Staff.objects.all()
@@ -340,18 +290,12 @@ def club_data(request):
         'assets':   ClubAssetSerializer(assets, many=True).data,
     })
 
-
-
-
-
-
 @api_view(['POST'])
 def send_whatsapp(request):
     try:
         data = request.data
         match_id = data.get('id')
 
-        # Fetch fresh from DB with all related data
         match = Match.objects.select_related(
             'home_team', 'away_team'
         ).prefetch_related(
@@ -362,10 +306,7 @@ def send_whatsapp(request):
         if match.match_type != 'internal':
             return Response({"error": "Only internal matches allowed"}, status=400)
 
-        # --- Date formatting ---
         date_str = match.date.strftime("%d %b %Y")
-
-        # --- Squad lists ---
         home_appearances = match.appearances.filter(team=match.home_team)
         away_appearances = match.appearances.filter(team=match.away_team)
 
@@ -383,7 +324,6 @@ def send_whatsapp(request):
         if not away_squad:
             away_squad = "  • Not recorded"
 
-        # --- Goals ---
         home_goals = match.goals.filter(team=match.home_team).order_by('minute')
         away_goals = match.goals.filter(team=match.away_team).order_by('minute')
 
@@ -399,11 +339,9 @@ def send_whatsapp(request):
         if not away_goals_text:
             away_goals_text = "  • No goals"
 
-        # --- MOTM ---
         motm_appearance = match.appearances.filter(is_motm=True).first()
         motm_name = motm_appearance.player.name if motm_appearance else "----"
 
-        # --- Assist leaders ---
         top_assisters = match.appearances.filter(assists__gt=0).order_by('-assists')
         if top_assisters.exists():
             assist_text = "\n".join(
@@ -413,7 +351,6 @@ def send_whatsapp(request):
         else:
             assist_text = "  • Not recorded"
 
-        # --- Build message ---
         message = f"""{date_str} MATCH RESULT
 
 {match.home_team.name} vs {match.away_team.name}

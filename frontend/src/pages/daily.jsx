@@ -7,19 +7,17 @@ import '../assets/css/daily.css';
 import useCounterAnimation from '../hooks/useCounterAnimation';
 import useTilt             from '../hooks/useTilt';
 import usePageLoader       from '../hooks/usePageLoader';
-
+import { Helmet } from "react-helmet-async";
 import calender from '../assets/icons/calendar.svg';
 import location from '../assets/icons/location.png';
 import logoIcon from '../assets/icons/grfc_icon.png'; 
 
 
-/* ── Constants ───────────────────────────────────────────── */
 const DAYS_SHORT  = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 const DAYS_FULL   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS_SHORT= ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-/* ── Helpers ─────────────────────────────────────────────── */
 const toYMD = (date) => {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -30,7 +28,6 @@ const toYMD = (date) => {
 const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
 const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
 
-/* ── Skeleton ────────────────────────────────────────────── */
 const Skeleton = ({ width='100%', height='20px', style={} }) => (
   <div style={{
     width, height, borderRadius:'6px',
@@ -39,7 +36,6 @@ const Skeleton = ({ width='100%', height='20px', style={} }) => (
   }}/>
 );
 
-/* ── Repeating scroll reveal ─────────────────────────────── */
 const useRepeatReveal = (deps = []) => {
   useEffect(() => {
     const els = document.querySelectorAll('[data-reveal]');
@@ -54,14 +50,6 @@ const useRepeatReveal = (deps = []) => {
   }, deps);
 };
 
-/* ══════════════════════════════════════════════════════════
-   CUSTOM CALENDAR COMPONENT
-   - Full month grid with navigation
-   - Highlights dates that have match data (from allDates)
-   - Highlights selected date in gold
-   - Today marked with a dot
-   - Positioned on left side of the ribbon
-══════════════════════════════════════════════════════════ */
 const CalendarPicker = ({ allDates, activeDate, onSelect, onClose }) => {
   const today    = new Date();
   const initDate = activeDate ? new Date(activeDate + 'T00:00:00') : today;
@@ -71,14 +59,12 @@ const CalendarPicker = ({ allDates, activeDate, onSelect, onClose }) => {
 
   const ref = useRef(null);
 
-  // Close when clicking outside
   useEffect(() => {
     const fn = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
     document.addEventListener('mousedown', fn);
     return () => document.removeEventListener('mousedown', fn);
   }, [onClose]);
 
-  // Close on Escape
   useEffect(() => {
     const fn = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', fn);
@@ -104,7 +90,6 @@ const CalendarPicker = ({ allDates, activeDate, onSelect, onClose }) => {
     onSelect(dateStr);
   };
 
-  // Build grid cells: blanks for offset + day numbers
   const cells = [];
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
@@ -127,7 +112,6 @@ const CalendarPicker = ({ allDates, activeDate, onSelect, onClose }) => {
         animation: 'fadeInDown 0.2s ease',
       }}
     >
-      {/* Inject animation keyframe once */}
       <style>{`
         @keyframes fadeInDown {
           from { opacity:0; transform:translateY(-8px); }
@@ -135,7 +119,6 @@ const CalendarPicker = ({ allDates, activeDate, onSelect, onClose }) => {
         }
       `}</style>
 
-      {/* Header — month navigation */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'16px' }}>
         <button
           onClick={prevMonth}
@@ -175,7 +158,6 @@ const CalendarPicker = ({ allDates, activeDate, onSelect, onClose }) => {
         </button>
       </div>
 
-      {/* Day-of-week headers */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:'2px', marginBottom:'6px' }}>
         {DAYS_FULL.map(d => (
           <div key={d} style={{
@@ -188,7 +170,6 @@ const CalendarPicker = ({ allDates, activeDate, onSelect, onClose }) => {
         ))}
       </div>
 
-      {/* Calendar grid */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:'3px' }}>
         {cells.map((day, i) => {
           if (!day) return <div key={`blank-${i}`}/>;
@@ -238,7 +219,6 @@ const CalendarPicker = ({ allDates, activeDate, onSelect, onClose }) => {
               title={hasMatch ? `Match on ${dateStr}` : dateStr}
             >
               {day}
-              {/* Today dot */}
               {isToday && (
                 <div style={{
                   width:'4px', height:'4px', borderRadius:'50%',
@@ -246,7 +226,6 @@ const CalendarPicker = ({ allDates, activeDate, onSelect, onClose }) => {
                   position:'absolute', bottom:'3px',
                 }}/>
               )}
-              {/* Match dot (if has match but not active) */}
               {hasMatch && !isActive && !isToday && (
                 <div style={{
                   width:'3px', height:'3px', borderRadius:'50%',
@@ -258,7 +237,6 @@ const CalendarPicker = ({ allDates, activeDate, onSelect, onClose }) => {
         })}
       </div>
 
-      {/* Legend */}
       <div style={{
         marginTop:'16px', paddingTop:'12px', borderTop:'1px solid var(--border)',
         display:'flex', gap:'16px', flexWrap:'wrap',
@@ -280,7 +258,6 @@ const CalendarPicker = ({ allDates, activeDate, onSelect, onClose }) => {
         ))}
       </div>
 
-      {/* Quick jump to today */}
       <button
         onClick={() => { onSelect(todayStr); }}
         style={{
@@ -299,7 +276,6 @@ const CalendarPicker = ({ allDates, activeDate, onSelect, onClose }) => {
   );
 };
 
-/* ── Calendar Trigger Button ─────────────────────────────── */
 const CalendarButton = ({ activeDate, allDates, onSelect }) => {
   const [open, setOpen] = useState(false);
 
@@ -328,7 +304,6 @@ const CalendarButton = ({ activeDate, allDates, onSelect }) => {
         onMouseEnter={e => { if (!open) { e.currentTarget.style.background='rgba(201,152,10,0.1)'; e.currentTarget.style.borderColor='rgba(201,152,10,0.5)'; } }}
         onMouseLeave={e => { if (!open) { e.currentTarget.style.background='rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor='var(--border)'; } }}
       >
-        {/* Calendar icon */}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
           <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
@@ -350,9 +325,6 @@ const CalendarButton = ({ activeDate, allDates, onSelect }) => {
   );
 };
 
-/* ═══════════════════════════════════════════════════════════
-   DAILY COMPONENT
-═══════════════════════════════════════════════════════════ */
 export default function Daily() {
   usePageLoader(); ; useCounterAnimation(); useTilt();
 
@@ -388,7 +360,6 @@ export default function Daily() {
       if (date) {
         setError('No match found for this date.');
       } else if (unique.length > 0) {
-        // dates exist but selected date has no entry — load latest
         fetchEntry(unique[0]);
         return;
       } else {
@@ -416,7 +387,6 @@ export default function Daily() {
     fetchEntry(dateStr);
   };
 
-  /* ── Derived data ──────────────────────────────────────── */
   const match      = entry?.match || null;
   const motmPlayer = entry?.motm_player || null;
 
@@ -427,9 +397,6 @@ export default function Daily() {
 
   const posCls = { GK:'gk', DEF:'def', MID:'mid', FWD:'fwd' };
 
-  /* ══════════════════════════════════════════════════════════
-     RENDER
-  ══════════════════════════════════════════════════════════ */
   return (
     <>
       <Helmet>
@@ -480,7 +447,6 @@ export default function Daily() {
 
       <div className="page-wrapper">
 
-        {/* ══ DATE RIBBON ════════════════════════════════════ */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -489,17 +455,14 @@ export default function Daily() {
           position: 'relative',
         }}>
 
-          {/* ── Calendar picker on LEFT ───────────────────── */}
           <CalendarButton
             activeDate={activeDate}
             allDates={allDates}
             onSelect={handleDateSelect}
           />
 
-          {/* ── Divider ───────────────────────────────────── */}
           <div style={{ width:'1px', height:'36px', background:'var(--border)', flexShrink:0 }}/>
 
-          {/* ── Scroll left arrow ─────────────────────────── */}
           <button
             className="date-nav-btn"
             onClick={() => scrollRef.current?.scrollBy({ left:-200, behavior:'smooth' })}
@@ -507,7 +470,6 @@ export default function Daily() {
             ‹
           </button>
 
-          {/* ── Pill ribbon ───────────────────────────────── */}
           <div
             className="date-scroll"
             ref={scrollRef}
@@ -540,7 +502,6 @@ export default function Daily() {
             })}
           </div>
 
-          {/* ── Scroll right arrow ────────────────────────── */}
           <button
             className="date-nav-btn"
             onClick={() => scrollRef.current?.scrollBy({ left:200, behavior:'smooth' })}
@@ -549,10 +510,8 @@ export default function Daily() {
           </button>
         </div>
 
-        {/* ══ MAIN CONTENT ═══════════════════════════════════ */}
         <section className="section">
 
-          {/* Error / no match */}
           {error && (
             <div style={{ textAlign:'center', padding:'80px 20px', color:'var(--text-muted)', fontFamily:'var(--font-mono)', fontSize:'0.85rem' }}>
               <div style={{ fontSize:'3rem', marginBottom:'16px' }}>📭</div>
@@ -564,7 +523,6 @@ export default function Daily() {
             </div>
           )}
 
-          {/* Loading */}
           {!error && loading && (
             <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
               <div className="card" style={{padding:'24px'}}>
@@ -578,7 +536,6 @@ export default function Daily() {
             </div>
           )}
 
-          {/* No match but no error */}
           {!error && !loading && entry.length === 0 && (
             <div style={{ textAlign:'center', padding:'80px 20px', color:'var(--text-muted)', fontFamily:'var(--font-mono)', fontSize:'0.85rem' }}>
               <div style={{ fontSize:'3rem', marginBottom:'16px' }}>📭</div>
@@ -587,7 +544,6 @@ export default function Daily() {
             </div>
           )}
 
-          {/* Match content */}
           {!error && !loading && entry.length > 0 && (
             <>
               {entry.map((item, idx) => (
@@ -603,7 +559,6 @@ export default function Daily() {
                         : 'none',
                   }}
                 >
-                  {/* ── Match Result Card ──────────────────────── */}
                   <div className="daily-match-card card tilt-card" data-reveal>
                     <div className="daily-match-header">
                       <span className="badge badge-violet">{item.competition}</span>
@@ -656,14 +611,12 @@ export default function Daily() {
                     </div>
                   </div>
 
-                  {/* ── Details Row ───────────────────────────── */}
                   <div className="daily-details-grid">
                     <div
                       className="daily-scorers card"
                       data-reveal
                       data-delay="80"
                     >
-                      {/* Home Goals */}
                       <div className="daily-scorers-col">
                         <h4>⚡ {item.match.home_team_name}</h4>
                         {item.match.goals?.filter(g => g.team_name === item.match.home_team_name).length > 0
@@ -681,7 +634,6 @@ export default function Daily() {
                         }
                       </div>
 
-                      {/* Away Goals */}
                       <div className="daily-scorers-col" style={{ opacity: 0.75 }}>
                         <h4>⚡ {item.match.away_team_name}</h4>
                         {item.match.goals?.filter(g => g.team_name === item.match.away_team_name).length > 0
@@ -712,9 +664,7 @@ export default function Daily() {
                     </div>
                   </div>
 
-                  {/* ── Squad + MOTM ─────────────────────────── */}
                   <div className="daily-squad-motm">
-                    {/* Squads */}
                     <div
                       className="squad-section card"
                       data-reveal
@@ -734,7 +684,6 @@ export default function Daily() {
                         </span>
                       </div>
 
-                      {/* Home squad */}
                       <div style={{ marginBottom: '20px' }}>
                         {(() => {
                           const homePlayers = item.match.appearances?.filter(
@@ -787,7 +736,6 @@ export default function Daily() {
                         })()}
                       </div>
 
-                      {/* Away squad */}
                       <div>
                         {(() => {
                           const awayPlayers = item.match.appearances?.filter(
@@ -841,7 +789,6 @@ export default function Daily() {
                       </div>
                     </div>
 
-                    {/* MOTM */}
                     <div
                       className="motm-section card tilt-card"
                       data-reveal
@@ -854,9 +801,7 @@ export default function Daily() {
                       </div>
 
                       {(() => {
-                          // MOTM is stored in MatchAppearance with is_motm=true
                           const motmApp = item.match.appearances?.find(a => a.is_motm === true);
-                          // Also check DailyEntry.motm_player (from your DailyEntrySerializer)
                           const motmName = item.motm_player?.name || motmApp?.player_name || null;
                           
 

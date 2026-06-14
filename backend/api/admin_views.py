@@ -1,12 +1,3 @@
-"""
-admin_views.py  —  Full CRUD API for the Golden Rock FC Admin Portal
-Place this file inside your api/ folder.
-
-KEY FIX: datetime-local HTML input sends "2026-07-05T06:00" (ISO 8601 with T).
-Django's DateTimeField.save() can struggle with this on some DB backends.
-We use django.utils.dateparse.parse_datetime which handles the T separator
-correctly, and fall back to a manual replace if needed.
-"""
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response   import Response
@@ -32,7 +23,6 @@ from .serializers import (
 )
 
 
-# ── helpers ──────────────────────────────────────────────────
 def ok(data=None, msg='Success', status_code=200):
     return Response({'success': True,  'message': msg, 'data': data}, status=status_code)
 
@@ -46,19 +36,14 @@ def parse_dt(value):
     """
     if not value:
         raise ValueError('date is required')
-    # django's parse_datetime handles ISO 8601 with T separator
     dt = parse_datetime(str(value).strip())
     if dt is None:
-        # fallback: replace T with space and try again
         dt = parse_datetime(str(value).strip().replace('T', ' '))
     if dt is None:
         raise ValueError(f"Cannot parse date '{value}'. Use format: YYYY-MM-DDTHH:MM")
     return dt
 
 
-# ═══════════════════════════════════════════════════════════
-#  BOOTSTRAP
-# ═══════════════════════════════════════════════════════════
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_bootstrap(request):
@@ -140,8 +125,6 @@ def player_detail(request, pk):
 
 # ═══════════════════════════════════════════════════════════
 #  MATCHES
-#  ROOT FIX: parse the datetime-local string with parse_dt()
-#  before passing to Match.objects.create()
 # ═══════════════════════════════════════════════════════════
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -153,13 +136,8 @@ def match_list_create(request):
     try:
         data = request.data
 
-        # ── CRITICAL FIX ──────────────────────────────────
-        # The browser datetime-local input sends "2026-07-05T06:00"
-        # parse_dt() converts this to a proper Python datetime object
-        # so Django can save it to PostgreSQL without error
         parsed_date = parse_dt(data.get('date', ''))
 
-        # Validate required fields before creating
         if not data.get('competition'):
             return err('Competition is required')
         if not data.get('venue'):
@@ -178,7 +156,7 @@ def match_list_create(request):
             tournament_id = int(data['tournament_id'])
 
         match = Match.objects.create(
-            date         = parsed_date,          # ← proper datetime object
+            date         = parsed_date,          
             competition  = data['competition'],
             venue        = data['venue'],
             home_team_id = int(data['home_team']),
@@ -193,7 +171,7 @@ def match_list_create(request):
         if match_type == 'internal':
             DailyEntry.objects.create(
                 match       = match,
-                date        = parsed_date.date(),   # DateField — just the date part
+                date        = parsed_date.date(),   
                 competition = data['competition'],
                 notes       = data.get('notes', ''),
             )
@@ -506,8 +484,6 @@ def partner_detail(request, pk):
 
 # ═══════════════════════════════════════════════════════════
 #  CLUB ASSETS
-#  Fixed 4 options: Match Balls, Training Nets, Cones & Markers,
-#  First Aid Kits — no free-text label field
 # ═══════════════════════════════════════════════════════════
 ASSET_OPTIONS = [
     {'label': 'Match Balls',     'icon': '⚽'},
@@ -522,8 +498,6 @@ def asset_list_create(request):
     if request.method == 'GET':
         return ok(ClubAssetSerializer(ClubAsset.objects.all(), many=True).data)
 
-    # The label and icon come from the fixed option selected
-    # Frontend sends: { asset_type: "Match Balls", count: 18 }
     try:
         asset_type = request.data.get('asset_type', '')
         option     = next((o for o in ASSET_OPTIONS if o['label'] == asset_type), None)
@@ -533,7 +507,6 @@ def asset_list_create(request):
         if count < 0:
             return err('Count cannot be negative')
 
-        # Update existing if same label exists, else create
         asset, created = ClubAsset.objects.update_or_create(
             label=option['label'],
             defaults={'icon': option['icon'], 'count': count, 'order': ASSET_OPTIONS.index(option)},
@@ -579,13 +552,11 @@ def admin_login(request):
     if not email or not password:
         return err('Email and password are required', 400)
 
-    # Django auth uses username — look up user by email first
     try:
         user = User.objects.get(email__iexact=email)
     except User.DoesNotExist:
         return err('Invalid credentials', 401)
 
-    # Check password and active status
     user = authenticate(username=user.username, password=password)
     if user is None:
         return err('Invalid credentials', 401)
@@ -596,7 +567,6 @@ def admin_login(request):
     if not user.is_staff:
         return err('Access denied — admin accounts only', 403)
 
-    # Generate JWT tokens
     refresh = RefreshToken.for_user(user)
     return ok({
         'access':  str(refresh.access_token),
@@ -612,11 +582,7 @@ def admin_login(request):
 
 @api_view(['GET'])
 def admin_verify(request):
-    """
-    Verifies the JWT token sent in Authorization header.
-    Returns user info if valid, 401 if not.
-    Used by adminportal.jsx on every page load.
-    """
+   
 
 
     try:
@@ -638,9 +604,7 @@ def admin_verify(request):
 
 @api_view(['POST'])
 def admin_logout(request):
-    """
-    Blacklists the refresh token so it cannot be reused.
-    """
+    
     try:
         refresh_token = request.data.get('refresh')
         if refresh_token:
